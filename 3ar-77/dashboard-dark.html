@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>WebAR Complete - Dashboard Profesional</title>
+    <link rel="stylesheet" href="css/dark-theme.css">
+    <link rel="stylesheet" href="css/components.css">
+    <style>
+        /* Estilos específicos para el dashboard - Compatible con dark theme */
+        .dashboard-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        .dashboard-header {
+            text-align: center;
+            margin-bottom: 3rem;
+            background: var(--gradient-primary);
+            color: white;
+            padding: 3rem 2rem;
+            border-radius: 20px;
+            box-shadow: var(--shadow-lg);
+        }
+        
+        .dashboard-title {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .dashboard-subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            margin-bottom: 2rem;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            background: var(--gradient-success);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 25px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-top: 1rem;
+            border: none;
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .workflow-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+        
+        .workflow-card {
+            background: var(--bg-card);
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: var(--shadow-md);
+            transition: all 0.3s ease;
+            border: 1px solid var(--border-color);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .workflow-card:hover {
+            transform: translateY(-10px);
+            box-shadow: var(--shadow-lg);
+        }
+        
+        .workflow-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--gradient-primary);
+        }
+        
+        .workflow-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            display: block;
+        }
+        
+        .workflow-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+        }
+        
+        .workflow-description {
+            color: var(--text-secondary);
+            margin-bottom: 1.5rem;
+            line-height: 1.6;
+        }
+        
+        .workflow-status {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 0.5rem;
+        }
+        
+        .status-indicator.ready {
+            background: var(--gradient-success);
+            box-shadow: 0 0 10px rgba(76, 175, 80, 0.5);
+        }
+        
+        .status-indicator.completed {
+            background: var(--gradient-primary);
+            box-shadow: 0 0 10px rgba(33, 150, 243, 0.5);
+        }
+        
+        .status-indicator.pending {
+            background: var(--gradient-warning);
+            box-shadow: 0 0 10px rgba(255, 152, 0, 0.5);
+        }
+        
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 3rem;
+        }
+        
+        .quick-action {
+            background: var(--gradient-secondary);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 15px;
+            text-align: center;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .quick-action:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-lg);
+            color: white;
+            text-decoration: none;
+        }
+        
+        .quick-action-icon {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 3rem;
+        }
+        
+        .stat-card {
+            background: var(--bg-card);
+            padding: 1.5rem;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: var(--shadow-md);
+            border: 1px solid var(--border-color);
+        }
+        
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 700;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.5rem;
+        }
+        
+        .stat-label {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+        
+        .progress-section {
+            background: var(--bg-card);
+            padding: 2rem;
+            border-radius: 20px;
+            box-shadow: var(--shadow-md);
+            margin-bottom: 2rem;
+        }
+        
+        .progress-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: var(--bg-tertiary);
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 1rem;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: var(--gradient-success);
+            border-radius: 10px;
+            transition: width 0.5s ease;
+            position: relative;
+        }
+        
+        .progress-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            animation: shimmer 2s infinite;
+        }
+        
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+        
+        .progress-text {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+        
+        .upload-section {
+            background: var(--bg-card);
+            padding: 2rem;
+            border-radius: 20px;
+            box-shadow: var(--shadow-md);
+            margin-bottom: 2rem;
+        }
+        
+        .upload-area {
+            border: 3px dashed var(--border-color);
+            border-radius: 15px;
+            padding: 3rem 2rem;
+            text-align: center;
+            background: var(--bg-tertiary);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            margin-bottom: 1rem;
+        }
+        
+        .upload-area:hover {
+            border-color: #667eea;
+            background: var(--bg-hover);
+            transform: translateY(-2px);
+        }
+        
+        .upload-area.dragover {
+            border-color: #4CAF50;
+            background: rgba(76, 175, 80, 0.1);
+        }
+        
+        .upload-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            color: var(--text-muted);
+        }
+        
+        .upload-text {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .upload-subtext {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+        
+        .file-list {
+            margin-top: 1rem;
+        }
+        
+        .file-item {
+            display: flex;
+            align-items: center;
+            padding: 0.5rem;
+            background: var(--bg-tertiary);
+            border-radius: 8px;
+            margin-bottom: 0.5rem;
+        }
+        
+        .file-icon {
+            margin-right: 0.5rem;
+            color: var(--text-muted);
+        }
+        
+        .file-name {
+            color: var(--text-primary);
+            font-size: 0.9rem;
+        }
+        
+        .reset-section {
+            background: var(--bg-card);
+            padding: 2rem;
+            border-radius: 20px;
+            box-shadow: var(--shadow-md);
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+        
+        .reset-warning {
+            color: var(--text-secondary);
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+        }
+        
+        .reset-button {
+            background: var(--gradient-danger);
+            color: white;
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .reset-button:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-lg);
+        }
+        
+        .reset-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <h1 class="nav-logo">WebAR Complete</h1>
+            <div class="nav-menu">
+                <a href="dashboard.html" class="nav-link active">🏠 Dashboard</a>
+                <a href="pages/marker-generator.html" class="nav-link">1️⃣ Marcadores</a>
+                <a href="pages/3d-editor.html" class="nav-link">2️⃣ Editor 3D</a>
+                <a href="pages/ar-verification.html" class="nav-link">3️⃣ Verificación AR</a>
+                <a href="pages/apk-builder.html" class="nav-link">4️⃣ Constructor APK</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="main-content">
+        <div class="dashboard-container">
+            <!-- Header Principal -->
+            <div class="dashboard-header">
+                <div class="dashboard-title">🚀 WebAR Complete</div>
+                <div class="dashboard-subtitle">Plataforma Profesional de Desarrollo de Realidad Aumentada</div>
+                <div class="status-badge">✔ Sistema Configurado y Listo</div>
+            </div>
+
+            <!-- Progreso del Proyecto -->
+            <div class="progress-section">
+                <div class="progress-title">📊 Progreso del Proyecto</div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 95%"></div>
+                </div>
+                <div class="progress-text">95% Completado - ¡Casi listo para producción!</div>
+            </div>
+
+            <!-- Estadísticas -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-number">5</div>
+                    <div class="stat-label">Módulos Completados</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">100%</div>
+                    <div class="stat-label">Funcionalidad AR</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">95%</div>
+                    <div class="stat-label">Progreso Total</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">APK</div>
+                    <div class="stat-label">Listo para Build</div>
+                </div>
+            </div>
+
+            <!-- Acciones Rápidas -->
+            <div class="quick-actions">
+                <a href="pages/marker-generator.html" class="quick-action">
+                    <div class="quick-action-icon">🎯</div>
+                    <div>Generar Marcadores AR</div>
+                </a>
+                <a href="pages/3d-editor.html" class="quick-action">
+                    <div class="quick-action-icon">🎨</div>
+                    <div>Editor 3D Interactivo</div>
+                </a>
+                <a href="pages/ar-verification.html" class="quick-action">
+                    <div class="quick-action-icon">📱</div>
+                    <div>Verificación AR</div>
+                </a>
+                <a href="pages/apk-builder.html" class="quick-action">
+                    <div class="quick-action-icon">📦</div>
+                    <div>Constructor APK</div>
+                </a>
+            </div>
+
+            <!-- Flujo de Trabajo -->
+            <div class="workflow-grid">
+                <div class="workflow-card">
+                    <div class="workflow-icon">🎯</div>
+                    <div class="workflow-title">1. Generar Marcadores</div>
+                    <div class="workflow-description">
+                        Crea marcadores AR personalizados a partir de tus imágenes. 
+                        Genera archivos .patt y imágenes de marcadores listos para usar.
+                    </div>
+                    <div class="workflow-status">
+                        <div class="status-indicator completed"></div>
+                        <span>Completado</span>
+                    </div>
+                    <a href="pages/marker-generator.html" class="btn btn-primary">Comenzar</a>
+                </div>
+
+                <div class="workflow-card">
+                    <div class="workflow-icon">🎨</div>
+                    <div class="workflow-title">2. Editor 3D</div>
+                    <div class="workflow-description">
+                        Edita y personaliza tus modelos 3D con controles interactivos. 
+                        Ajusta posición, rotación, escala y propiedades visuales.
+                    </div>
+                    <div class="workflow-status">
+                        <div class="status-indicator ready"></div>
+                        <span>Listo</span>
+                    </div>
+                    <a href="pages/3d-editor.html" class="btn btn-secondary">Comenzar</a>
+                </div>
+
+                <div class="workflow-card">
+                    <div class="workflow-icon">📱</div>
+                    <div class="workflow-title">3. Verificación AR</div>
+                    <div class="workflow-description">
+                        Prueba tu experiencia AR en tiempo real con la cámara. 
+                        Verifica que los marcadores funcionen correctamente.
+                    </div>
+                    <div class="workflow-status">
+                        <div class="status-indicator ready"></div>
+                        <span>Listo</span>
+                    </div>
+                    <a href="pages/ar-verification.html" class="btn btn-success">Comenzar</a>
+                </div>
+
+                <div class="workflow-card">
+                    <div class="workflow-icon">📦</div>
+                    <div class="workflow-title">4. Constructor APK</div>
+                    <div class="workflow-description">
+                        Genera tu aplicación Android APK lista para distribuir. 
+                        Convierte tu proyecto web en una app nativa.
+                    </div>
+                    <div class="workflow-status">
+                        <div class="status-indicator pending"></div>
+                        <span>Pendiente</span>
+                    </div>
+                    <a href="pages/apk-builder.html" class="btn btn-warning">Comenzar</a>
+                </div>
+            </div>
+
+            <!-- Sección de Upload -->
+            <div class="upload-section">
+                <div class="section-title">📁 Carga de Archivos</div>
+                <div class="upload-area" id="uploadArea">
+                    <div class="upload-icon">📁</div>
+                    <div class="upload-text">Arrastra y suelta tus archivos aquí</div>
+                    <div class="upload-subtext">o haz clic para seleccionar archivos</div>
+                    <input type="file" id="fileInput" multiple accept="image/*,.gltf,.glb" style="display: none;">
+                </div>
+                <div class="file-list" id="fileList"></div>
+            </div>
+
+            <!-- Sección de Reset -->
+            <div class="reset-section">
+                <div class="section-title">🔄 Reset del Sistema</div>
+                <div class="reset-warning">
+                    ⚠️ Esta acción eliminará todos los archivos cargados y generados. 
+                    No se pueden deshacer los cambios.
+                </div>
+                <button class="reset-button" id="resetButton">🗑️ Resetear Sistema</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/dashboard.js"></script>
+</body>
+</html>

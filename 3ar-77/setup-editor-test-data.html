@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configurar Datos de Prueba - Editor 3D</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #1a1a1a;
+            color: white;
+        }
+        .container {
+            background: #333;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            transform: translateY(-2px);
+        }
+        .status {
+            margin-top: 20px;
+            padding: 10px;
+            border-radius: 5px;
+            background: #444;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔧 Configurar Datos de Prueba - Editor 3D</h1>
+    
+    <div class="container">
+        <h2>📁 Datos del Proyecto</h2>
+        <p>Configura datos de prueba para el Editor 3D</p>
+        <button onclick="setupTestData()">✅ Configurar Datos de Prueba</button>
+        <button onclick="clearData()">🗑️ Limpiar Datos</button>
+        <button onclick="checkData()">🔍 Verificar Datos</button>
+    </div>
+    
+    <div class="container">
+        <h2>🎯 Acciones</h2>
+        <button onclick="goToEditor()">🚀 Ir al Editor 3D</button>
+        <button onclick="goToMarkerGenerator()">🎯 Ir al Generador de Marcadores</button>
+    </div>
+    
+    <div id="status" class="status" style="display: none;"></div>
+
+    <script>
+        function setupTestData() {
+            // Crear un proyecto de prueba completo
+            const testProject = {
+                // Datos para el Editor 3D
+                originalModel: null, // Se creará un modelo de prueba
+                markerImage: null, // Se creará un marcador de prueba
+                
+                // Datos adicionales
+                markerImages: [],
+                modelFiles: [],
+                generatedMarkers: null,
+                generatedModels: null,
+                timestamp: new Date().toISOString(),
+                
+                // Configuración del proyecto
+                projectName: 'proyecto_prueba',
+                markerSize: 80,
+                patternRatio: 0.7,
+                borderThickness: 0.2,
+                
+                // Configuración de transformación
+                transform: {
+                    position: { x: 0, y: 0, z: 0 },
+                    rotation: { x: 0, y: 0, z: 0 },
+                    scale: { x: 1, y: 1, z: 1 }
+                },
+                
+                // Configuración AR
+                arConfig: {
+                    markerSize: 8,
+                    trackingQuality: 'high',
+                    editorCompleted: false,
+                    lastEdit: new Date().toISOString()
+                }
+            };
+            
+            // Guardar en localStorage
+            localStorage.setItem('webAR_project', JSON.stringify(testProject));
+            
+            showStatus('✅ Datos de prueba configurados correctamente', 'success');
+        }
+        
+        function clearData() {
+            localStorage.removeItem('webAR_project');
+            localStorage.removeItem('markerImage');
+            localStorage.removeItem('model3D');
+            localStorage.removeItem('uploadedFiles');
+            localStorage.removeItem('generatedMarkers');
+            localStorage.removeItem('generatedModels');
+            
+            showStatus('🗑️ Datos limpiados correctamente', 'info');
+        }
+        
+        function checkData() {
+            const projectData = localStorage.getItem('webAR_project');
+            if (projectData) {
+                const data = JSON.parse(projectData);
+                showStatus(`📊 Datos encontrados: ${JSON.stringify(data, null, 2)}`, 'info');
+            } else {
+                showStatus('❌ No se encontraron datos del proyecto', 'error');
+            }
+        }
+        
+        function goToEditor() {
+            window.location.href = 'pages/3d-editor.html';
+        }
+        
+        function goToMarkerGenerator() {
+            window.location.href = 'pages/marker-generator.html';
+        }
+        
+        function showStatus(message, type) {
+            const status = document.getElementById('status');
+            status.textContent = message;
+            status.style.display = 'block';
+            status.style.background = type === 'success' ? '#4CAF50' : 
+                                    type === 'error' ? '#f44336' : '#2196F3';
+        }
+    </script>
+</body>
+</html>

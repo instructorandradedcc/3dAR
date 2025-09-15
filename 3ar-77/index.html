@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>WebAR Complete - Generador AR Completo</title>
+    <link rel="manifest" href="/manifest.json">
+    <link rel="stylesheet" href="css/dark-theme.css">
+    <link rel="icon" type="image/png" href="/assets/images/favicon.ico">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <h1 class="nav-logo">WebAR Complete</h1>
+            <div class="nav-menu">
+                <a href="/" class="nav-link active">Inicio</a>
+                <a href="/dashboard.html" class="nav-link">🚀 Dashboard</a>
+                <a href="/pages/project-manager.html" class="nav-link">📁 Proyectos</a>
+                <a href="/pages/marker-generator.html" class="nav-link">1. Marcadores</a>
+                <a href="/pages/marker-generator-multi.html" class="nav-link">1. Libro 3D</a>
+                <a href="/pages/3d-editor.html" class="nav-link">2. Editor 3D</a>
+                <a href="/pages/ar-verification.html" class="nav-link">3. Verificación AR</a>
+                <a href="/pages/apk-builder.html" class="nav-link">4. Generar APK</a>
+                <button class="btn btn-secondary btn-sm" onclick="showHelp()" title="Ayuda y Tutoriales">❓</button>
+            </div>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <section class="hero">
+            <div class="hero-content">
+                <h1>Generador Completo de Aplicaciones WebAR</h1>
+                <p>Crea aplicaciones de Realidad Aumentada completas desde marcadores hasta APK en 4 pasos simples</p>
+                <div class="hero-buttons">
+                    <a href="/dashboard.html" class="btn btn-primary" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none; font-weight: 600;">🚀 Dashboard Profesional</a>
+                    <a href="/pages/marker-generator.html" class="btn btn-secondary">Comenzar Ahora</a>
+                    <a href="#workflow" class="btn btn-secondary">Ver Proceso</a>
+                </div>
+            </div>
+        </section>
+
+        <section id="workflow" class="workflow">
+            <div class="container">
+                <h2>Proceso de Desarrollo en 4 Pasos</h2>
+                <div class="workflow-grid">
+                    <div class="workflow-card">
+                        <div class="card-icon">📷</div>
+                        <h3>1. Generador de Marcadores</h3>
+                        <p>Sube una imagen JPG y un modelo 3D. Genera automáticamente archivos .patt y marcadores optimizados para AR.js</p>
+                        <a href="/pages/marker-generator.html" class="card-btn">Crear Marcador</a>
+                    </div>
+                    
+                    <div class="workflow-card">
+                        <div class="card-icon">🎯</div>
+                        <h3>2. Editor 3D</h3>
+                        <p>Posiciona, rota y escala tu modelo 3D sobre el marcador usando controles interactivos en tiempo real.</p>
+                        <a href="/pages/3d-editor.html" class="card-btn">Editor 3D</a>
+                    </div>
+                    
+                    <div class="workflow-card">
+                        <div class="card-icon">📱</div>
+                        <h3>3. Verificación AR</h3>
+                        <p>Prueba tu experiencia AR usando la cámara de tu dispositivo. Verifica que todo funcione correctamente.</p>
+                        <a href="/pages/ar-verification.html" class="card-btn">Probar AR</a>
+                    </div>
+                    
+                    <div class="workflow-card">
+                        <div class="card-icon">📦</div>
+                        <h3>4. Generar APK</h3>
+                        <p>Convierte tu aplicación web AR en un APK de Android listo para instalar usando Capacitor.</p>
+                        <a href="/pages/apk-builder.html" class="card-btn">Crear APK</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="features">
+            <div class="container">
+                <h2>Características Principales</h2>
+                <div class="features-grid">
+                    <div class="feature-item">
+                        <h4>🚀 Tecnologías Modernas</h4>
+                        <p>AR.js, Three.js, A-Frame y Capacitor integrados</p>
+                    </div>
+                    <div class="feature-item">
+                        <h4>📱 Multiplataforma</h4>
+                        <p>Funciona en navegadores web y como aplicación Android</p>
+                    </div>
+                    <div class="feature-item">
+                        <h4>🎮 Editor Interactivo</h4>
+                        <p>Editor 3D con controles de transformación en tiempo real</p>
+                    </div>
+                    <div class="feature-item">
+                        <h4>⚡ Rendimiento Optimizado</h4>
+                        <p>60 FPS en dispositivos móviles con modelos optimizados</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="system-requirements">
+            <div class="container">
+                <h2>Requisitos del Sistema</h2>
+                <div class="requirements-grid">
+                    <div class="req-column">
+                        <h4>Desarrollo</h4>
+                        <ul>
+                            <li>Node.js 16+</li>
+                            <li>Chrome 90+ o Firefox 90+</li>
+                            <li>Android Studio (para APK)</li>
+                            <li>Java JDK 8+</li>
+                        </ul>
+                    </div>
+                    <div class="req-column">
+                        <h4>Dispositivos Compatibles</h4>
+                        <ul>
+                            <li>Android 7.0+ (API 24+)</li>
+                            <li>iOS 13+ (Safari)</li>
+                            <li>Chrome Desktop/Mobile</li>
+                            <li>Cámara frontal/trasera</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2025 WebAR Complete. Desarrollado con AR.js, Three.js y Capacitor.</p>
+        </div>
+    </footer>
+
+    <script type="module" src="/js/app.js"></script>
+    <script type="module" src="/js/tutorial-system.js"></script>
+</body>
+</html>

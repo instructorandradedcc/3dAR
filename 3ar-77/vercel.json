@@ -1,0 +1,29 @@
+{
+  "version": 2,
+  "name": "webar-complete",
+  "builds": [
+    {
+      "src": "static-server.js",
+      "use": "@vercel/node"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "/api/not-found"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/static-server.js"
+    }
+  ],
+  "env": {
+    "NODE_ENV": "production"
+  },
+  "functions": {
+    "static-server.js": {
+      "maxDuration": 10
+    }
+  }
+}
+

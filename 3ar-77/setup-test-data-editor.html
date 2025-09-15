@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configurar Datos de Prueba - Editor 3D</title>
+    <link rel="stylesheet" href="css/dark-theme.css">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--color-bg-primary);
+            color: var(--color-text-primary);
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: var(--color-bg-secondary);
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: var(--shadow-lg);
+        }
+        .btn {
+            background: var(--gradient-primary);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px;
+            transition: all 0.3s ease;
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+        .btn-success {
+            background: linear-gradient(135deg, #10b981, #059669);
+        }
+        .btn-danger {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+        }
+        .status {
+            margin: 20px 0;
+            padding: 15px;
+            border-radius: 8px;
+            background: var(--color-bg-primary);
+            border-left: 4px solid var(--color-accent);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎯 Configurar Datos de Prueba - Editor 3D</h1>
+        
+        <div class="status">
+            <h3>Estado Actual:</h3>
+            <p id="status">Verificando datos...</p>
+        </div>
+        
+        <div>
+            <h3>Acciones:</h3>
+            <button class="btn btn-success" onclick="setupTestData()">📁 Cargar Datos de Prueba</button>
+            <button class="btn btn-danger" onclick="clearData()">🗑️ Limpiar Datos</button>
+            <button class="btn" onclick="goToEditor()">🎮 Ir al Editor 3D</button>
+        </div>
+        
+        <div class="status">
+            <h3>Información:</h3>
+            <p>Esta página te permite configurar datos de prueba para el Editor 3D.</p>
+            <p>Los datos incluyen modelos 3D y marcadores AR de ejemplo.</p>
+        </div>
+    </div>
+
+    <script>
+        function checkStatus() {
+            const projectData = localStorage.getItem('webAR_project');
+            const statusEl = document.getElementById('status');
+            
+            if (projectData) {
+                try {
+                    const data = JSON.parse(projectData);
+                    statusEl.innerHTML = `
+                        <strong>✅ Datos encontrados:</strong><br>
+                        - Modelos 3D: ${data.modelFiles ? data.modelFiles.length : 0}<br>
+                        - Marcadores: ${data.markerImages ? data.markerImages.length : 0}<br>
+                        - Proyecto: ${data.projectName || 'Sin nombre'}
+                    `;
+                } catch (error) {
+                    statusEl.innerHTML = '<strong>❌ Error en los datos</strong>';
+                }
+            } else {
+                statusEl.innerHTML = '<strong>⚠️ No hay datos de proyecto</strong>';
+            }
+        }
+        
+        function setupTestData() {
+            // Crear datos de prueba
+            const testData = {
+                projectName: 'proyecto_prueba',
+                timestamp: new Date().toISOString(),
+                markerImages: [
+                    // Simular archivo de imagen
+                    {
+                        name: 'marker_test.jpg',
+                        type: 'image/jpeg',
+                        size: 1024
+                    }
+                ],
+                modelFiles: [
+                    // Simular archivo de modelo 3D
+                    {
+                        name: 'model_test.glb',
+                        type: 'model/gltf-binary',
+                        size: 2048
+                    }
+                ],
+                generatedMarkers: null,
+                generatedModels: null,
+                markerSize: 8,
+                patternRatio: 0.7,
+                borderThickness: 0.2
+            };
+            
+            // Guardar en localStorage
+            localStorage.setItem('webAR_project', JSON.stringify(testData));
+            
+            // Mostrar confirmación
+            alert('✅ Datos de prueba cargados correctamente');
+            checkStatus();
+        }
+        
+        function clearData() {
+            // Limpiar datos
+            localStorage.removeItem('webAR_project');
+            localStorage.removeItem('generatedMarkers');
+            localStorage.removeItem('generatedModels');
+            
+            // Mostrar confirmación
+            alert('🗑️ Datos limpiados correctamente');
+            checkStatus();
+        }
+        
+        function goToEditor() {
+            window.location.href = 'pages/3d-editor.html';
+        }
+        
+        // Verificar estado al cargar
+        checkStatus();
+    </script>
+</body>
+</html>

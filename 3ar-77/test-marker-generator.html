@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Marker Generator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 2rem;
+            background: #f5f5f5;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 0.5rem;
+            font-size: 1rem;
+        }
+        .button:hover {
+            background: #0056b3;
+        }
+        .button:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+        }
+        .status {
+            margin: 1rem 0;
+            padding: 1rem;
+            border-radius: 5px;
+            background: #e9ecef;
+        }
+        .file-list {
+            margin: 1rem 0;
+            padding: 1rem;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            background: #f8f9fa;
+        }
+        .file-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem;
+            margin: 0.5rem 0;
+            background: white;
+            border-radius: 5px;
+            border: 1px solid #e9ecef;
+        }
+        .file-preview {
+            width: 50px;
+            height: 50px;
+            object-fit: cover;
+            border-radius: 5px;
+        }
+        .progress {
+            width: 100%;
+            height: 20px;
+            background: #e9ecef;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 1rem 0;
+        }
+        .progress-fill {
+            height: 100%;
+            background: #28a745;
+            transition: width 0.3s ease;
+        }
+        .results {
+            margin: 1rem 0;
+            padding: 1rem;
+            border: 1px solid #28a745;
+            border-radius: 5px;
+            background: #d4edda;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Test Marker Generator</h1>
+        <p>Esta página prueba la funcionalidad del generador de marcadores AR.</p>
+        
+        <div class="status" id="status">
+            Estado: Iniciando...
+        </div>
+        
+        <div>
+            <button class="button" onclick="addTestData()">➕ Agregar Datos de Prueba</button>
+            <button class="button" onclick="loadFromDashboard()">📥 Cargar desde Dashboard</button>
+            <button class="button" onclick="clearData()">🗑️ Limpiar Datos</button>
+        </div>
+        
+        <div class="file-list" id="fileList">
+            <h3>Archivos Cargados:</h3>
+            <div id="files"></div>
+        </div>
+        
+        <div>
+            <button class="button" id="generateButton" onclick="generateMarkers()" disabled>
+                🚀 Generar Marcadores AR
+            </button>
+        </div>
+        
+        <div class="progress" id="progress" style="display: none;">
+            <div class="progress-fill" id="progressFill"></div>
+        </div>
+        
+        <div class="results" id="results" style="display: none;">
+            <h3>✅ Resultados:</h3>
+            <div id="resultsContent"></div>
+        </div>
+    </div>
+
+    <script>
+        // Variables globales
+        let imageFiles = [];
+        let modelFiles = [];
+
+        // Función para agregar datos de prueba
+        function addTestData() {
+            console.log('➕ Agregando datos de prueba...');
+            
+            // Crear datos de prueba
+            const testImage = {
+                name: 'imagen-prueba.jpg',
+                filename: 'imagen-prueba.jpg',
+                size: 1024000,
+                type: 'image/jpeg',
+                url: 'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEAYABgAAD/2wBDAAEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQH/2wBDAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQH/wAARCAABAAEDASIAAwERAAIRAAPwA/8='
+            };
+
+            const testModel = {
+                name: 'modelo-prueba.glb',
+                filename: 'modelo-prueba.glb',
+                size: 2048000,
+                type: 'model/gltf-binary'
+            };
+
+            const testImage2 = {
+                name: 'imagen-2.png',
+                filename: 'imagen-2.png',
+                size: 512000,
+                type: 'image/png'
+            };
+
+            const testModel2 = {
+                name: 'modelo-2.obj',
+                filename: 'modelo-2.obj',
+                size: 1536000,
+                type: 'model/obj'
+            };
+
+            // Agregar al localStorage
+            localStorage.setItem('markerImage', JSON.stringify(testImage));
+            localStorage.setItem('model3D', JSON.stringify(testModel));
+            localStorage.setItem('uploadedFiles', JSON.stringify([testImage, testModel, testImage2, testModel2]));
+
+            // Actualizar estado
+            updateStatus('✅ Datos de prueba agregados al localStorage');
+            
+            // Cargar automáticamente
+            setTimeout(() => {
+                loadFromDashboard();
+            }, 500);
+        }
+
+        // Función para cargar desde dashboard
+        function loadFromDashboard() {
+            console.log('📥 Cargando desde dashboard...');
+            updateStatus('🔄 Cargando archivos desde dashboard...');
+            
+            try {
+                // Limpiar arrays
+                imageFiles = [];
+                modelFiles = [];
+                
+                // Obtener datos del localStorage
+                const markerImages = localStorage.getItem('markerImage');
+                const model3D = localStorage.getItem('model3D');
+                const uploadedFiles = localStorage.getItem('uploadedFiles');
+                
+                console.log('📁 Datos encontrados:', {
+                    markerImages: !!markerImages,
+                    model3D: !!model3D,
+                    uploadedFiles: !!uploadedFiles
+                });
+                
+                let filesLoaded = false;
+                
+                // Cargar imagen individual
+                if (markerImages) {
+                    try {
+                        const imageData = JSON.parse(markerImages);
+                        imageFiles.push(imageData);
+                        filesLoaded = true;
+                        console.log('✅ Imagen individual cargada:', imageData);
+                    } catch (e) {
+                        console.log('❌ Error parseando imagen individual:', e);
+                    }
+                }
+                
+                // Cargar modelo individual
+                if (model3D) {
+                    try {
+                        const modelData = JSON.parse(model3D);
+                        modelFiles.push(modelData);
+                        filesLoaded = true;
+                        console.log('✅ Modelo individual cargado:', modelData);
+                    } catch (e) {
+                        console.log('❌ Error parseando modelo individual:', e);
+                    }
+                }
+                
+                // Cargar archivos múltiples
+                if (uploadedFiles) {
+                    try {
+                        const filesData = JSON.parse(uploadedFiles);
+                        console.log('📦 Archivos múltiples encontrados:', filesData.length);
+                        
+                        filesData.forEach(file => {
+                            console.log('🔍 Procesando archivo:', file);
+                            
+                            if (file.type && file.type.startsWith('image/')) {
+                                imageFiles.push(file);
+                                console.log('✅ Imagen agregada:', file.filename || file.name);
+                            } else if (file.type && (file.type.includes('gltf') || file.type.includes('glb') || file.type.includes('model'))) {
+                                modelFiles.push(file);
+                                console.log('✅ Modelo agregado:', file.filename || file.name);
+                            } else if (file.filename) {
+                                const ext = file.filename.toLowerCase().split('.').pop();
+                                if (['jpg', 'jpeg', 'png', 'gif'].includes(ext)) {
+                                    imageFiles.push(file);
+                                    console.log('✅ Imagen agregada por extensión:', file.filename);
+                                } else if (['gltf', 'glb', 'obj', 'fbx'].includes(ext)) {
+                                    modelFiles.push(file);
+                                    console.log('✅ Modelo agregado por extensión:', file.filename);
+                                }
+                            }
+                        });
+                        
+                        if (filesData.length > 0) {
+                            filesLoaded = true;
+                        }
+                    } catch (e) {
+                        console.log('❌ Error parseando archivos múltiples:', e);
+                    }
+                }
+                
+                console.log('📊 Resumen final:', {
+                    imagenes: imageFiles.length,
+                    modelos: modelFiles.length,
+                    filesLoaded: filesLoaded
+                });
+                
+                // Mostrar archivos
+                if (filesLoaded) {
+                    displayFiles();
+                    updateStatus(`✅ Cargados ${imageFiles.length} imágenes y ${modelFiles.length} modelos`);
+                    updateGenerateButton();
+                } else {
+                    updateStatus('ℹ️ No hay archivos en el Dashboard');
+                    updateGenerateButton();
+                }
+                
+            } catch (error) {
+                console.error('❌ Error general:', error);
+                updateStatus('❌ Error cargando archivos: ' + error.message);
+            }
+        }
+
+        // Función para mostrar archivos
+        function displayFiles() {
+            const filesContainer = document.getElementById('files');
+            filesContainer.innerHTML = '';
+            
+            // Mostrar imágenes
+            imageFiles.forEach((file, index) => {
+                const fileItem = document.createElement('div');
+                fileItem.className = 'file-item';
+                fileItem.innerHTML = `
+                    <div>
+                        <img src="${file.url || 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTAiIGhlaWdodD0iNTAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjUwIiBoZWlnaHQ9IjUwIiBmaWxsPSIjZjhmOWZhIi8+PHRleHQgeD0iMjUiIHk9IjI1IiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTIiIGZpbGw9IiM2NjYiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5JbWFnZW48L3RleHQ+PC9zdmc+'}" class="file-preview" alt="Imagen">
+                        <span>${file.name || file.filename || 'Imagen'}</span>
+                    </div>
+                    <button onclick="removeImage(${index})" style="background: #dc3545; color: white; border: none; padding: 0.25rem 0.5rem; border-radius: 3px; cursor: pointer;">Eliminar</button>
+                `;
+                filesContainer.appendChild(fileItem);
+            });
+            
+            // Mostrar modelos
+            modelFiles.forEach((file, index) => {
+                const fileItem = document.createElement('div');
+                fileItem.className = 'file-item';
+                fileItem.innerHTML = `
+                    <div>
+                        <div style="width: 50px; height: 50px; background: #e9ecef; border-radius: 5px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem;">🎲</div>
+                        <span>${file.name || file.filename || 'Modelo 3D'}</span>
+                    </div>
+                    <button onclick="removeModel(${index})" style="background: #dc3545; color: white; border: none; padding: 0.25rem 0.5rem; border-radius: 3px; cursor: pointer;">Eliminar</button>
+                `;
+                filesContainer.appendChild(fileItem);
+            });
+        }
+
+        // Función para actualizar botón de generar
+        function updateGenerateButton() {
+            const generateButton = document.getElementById('generateButton');
+            const hasImages = imageFiles.length > 0;
+            const hasModels = modelFiles.length > 0;
+            
+            if (hasImages && hasModels) {
+                generateButton.disabled = false;
+                generateButton.textContent = `🚀 Generar Marcadores AR (${imageFiles.length} imágenes, ${modelFiles.length} modelos)`;
+                console.log('✅ Botón de generar HABILITADO');
+            } else {
+                generateButton.disabled = true;
+                generateButton.textContent = '🚀 Generar Marcadores AR (Faltan archivos)';
+                console.log('❌ Botón de generar DESHABILITADO');
+            }
+        }
+
+        // Función para generar marcadores
+        async function generateMarkers() {
+            console.log('🚀 Generando marcadores...');
+            updateStatus('🔄 Generando marcadores...');
+            
+            const progress = document.getElementById('progress');
+            const progressFill = document.getElementById('progressFill');
+            const results = document.getElementById('results');
+            const resultsContent = document.getElementById('resultsContent');
+            
+            progress.style.display = 'block';
+            results.style.display = 'none';
+            
+            try {
+                // Simular progreso
+                for (let i = 0; i <= 100; i += 10) {
+                    progressFill.style.width = i + '%';
+                    await new Promise(resolve => setTimeout(resolve, 200));
+                }
+                
+                // Simular generación de archivos
+                const pattFiles = [];
+                const markerImages = [];
+                const optimizedModels = [];
+                
+                for (let i = 0; i < imageFiles.length; i++) {
+                    pattFiles.push(`archivo_${i + 1}.patt`);
+                    markerImages.push(`marker_${i + 1}.png`);
+                }
+                
+                for (let i = 0; i < modelFiles.length; i++) {
+                    optimizedModels.push(`modelo_${i + 1}_optimizado.glb`);
+                }
+                
+                // Mostrar resultados
+                resultsContent.innerHTML = `
+                    <p><strong>Archivos .patt generados:</strong> ${pattFiles.length}</p>
+                    <p><strong>Imágenes de marcadores:</strong> ${markerImages.length}</p>
+                    <p><strong>Modelos optimizados:</strong> ${optimizedModels.length}</p>
+                    <p><strong>Total de archivos:</strong> ${pattFiles.length + markerImages.length + optimizedModels.length}</p>
+                `;
+                
+                results.style.display = 'block';
+                updateStatus('✅ Marcadores generados exitosamente!');
+                
+            } catch (error) {
+                console.error('❌ Error generando marcadores:', error);
+                updateStatus('❌ Error generando marcadores: ' + error.message);
+            }
+        }
+
+        // Función para limpiar datos
+        function clearData() {
+            localStorage.removeItem('markerImage');
+            localStorage.removeItem('model3D');
+            localStorage.removeItem('uploadedFiles');
+            imageFiles = [];
+            modelFiles = [];
+            displayFiles();
+            updateGenerateButton();
+            updateStatus('🗑️ Datos limpiados');
+        }
+
+        // Función para eliminar imagen
+        function removeImage(index) {
+            imageFiles.splice(index, 1);
+            displayFiles();
+            updateGenerateButton();
+        }
+
+        // Función para eliminar modelo
+        function removeModel(index) {
+            modelFiles.splice(index, 1);
+            displayFiles();
+            updateGenerateButton();
+        }
+
+        // Función para actualizar estado
+        function updateStatus(message) {
+            document.getElementById('status').textContent = 'Estado: ' + message;
+        }
+
+        // Inicializar
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('✅ Test Marker Generator inicializado');
+            updateStatus('✅ Listo para probar');
+            
+            // Intentar cargar automáticamente
+            setTimeout(() => {
+                loadFromDashboard();
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

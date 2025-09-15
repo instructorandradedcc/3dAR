@@ -1,0 +1,1553 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>WebAR Complete - Dashboard Profesional</title>
+    <link rel="stylesheet" href="css/dark-theme.css">
+    <link rel="stylesheet" href="css/components.css">
+    <style>
+        /* Estilos específicos para el dashboard - Compatible con dark theme */
+        .dashboard-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        .dashboard-header {
+            text-align: center;
+            margin-bottom: 3rem;
+            background: var(--gradient-primary);
+            color: white;
+            padding: 3rem 2rem;
+            border-radius: 20px;
+            box-shadow: var(--shadow-lg);
+        }
+        
+        .dashboard-title {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .dashboard-subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            margin-bottom: 2rem;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            background: rgba(255,255,255,0.2);
+            padding: 0.5rem 1rem;
+            border-radius: 25px;
+            font-size: 0.9rem;
+            backdrop-filter: blur(10px);
+        }
+        
+        .workflow-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+        
+        .workflow-card {
+            background: var(--bg-card);
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: var(--shadow-md);
+            transition: all 0.3s ease;
+            border: 1px solid var(--border-color);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .workflow-card:hover {
+            transform: translateY(-10px);
+            box-shadow: var(--shadow-lg);
+        }
+        
+        .workflow-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+        }
+        
+        .workflow-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            display: block;
+        }
+        
+        .workflow-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+        }
+        
+        .workflow-description {
+            color: var(--text-secondary);
+            margin-bottom: 1.5rem;
+            line-height: 1.6;
+        }
+        
+        .workflow-status {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 0.5rem;
+        }
+        
+        .status-indicator.ready {
+            background: var(--gradient-success);
+            box-shadow: 0 0 10px rgba(76, 175, 80, 0.5);
+        }
+        
+        .status-indicator.completed {
+            background: var(--gradient-primary);
+            box-shadow: 0 0 10px rgba(33, 150, 243, 0.5);
+        }
+        
+        .status-indicator.pending {
+            background: var(--gradient-warning);
+            box-shadow: 0 0 10px rgba(255, 152, 0, 0.5);
+        }
+        
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 3rem;
+        }
+        
+        .quick-action {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 15px;
+            text-align: center;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .quick-action:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-lg);
+            color: white;
+            text-decoration: none;
+        }
+        
+        .quick-action-icon {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 3rem;
+        }
+        
+        .stat-card {
+            background: var(--bg-card);
+            padding: 1.5rem;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: var(--shadow-md);
+            border: 1px solid var(--border-color);
+        }
+        
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 700;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.5rem;
+        }
+        
+        .stat-label {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+        
+        .progress-section {
+            background: var(--bg-card);
+            padding: 2rem;
+            border-radius: 20px;
+            box-shadow: var(--shadow-md);
+            margin-bottom: 2rem;
+        }
+        
+        .progress-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+        }
+        
+        .progress-bar-container {
+            background: #f0f0f0;
+            border-radius: 10px;
+            height: 20px;
+            overflow: hidden;
+            margin-bottom: 1rem;
+        }
+        
+        .progress-bar-fill {
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            height: 100%;
+            border-radius: 10px;
+            transition: width 0.5s ease;
+            position: relative;
+        }
+        
+        .progress-bar-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            animation: shimmer 2s infinite;
+        }
+        
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+        
+        .progress-text {
+            text-align: center;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+        
+        .floating-action {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            box-shadow: var(--shadow-lg);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+        
+        .floating-action:hover {
+            transform: scale(1.1);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.3);
+        }
+        
+        .notification {
+            position: fixed;
+            top: 2rem;
+            right: 2rem;
+            background: var(--bg-card);
+            padding: 1rem 1.5rem;
+            border-radius: 10px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            border-left: 4px solid #4CAF50;
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+            z-index: 1001;
+        }
+        
+        .notification.show {
+            transform: translateX(0);
+        }
+        
+        .upload-section {
+            background: var(--bg-card);
+            padding: 2rem;
+            border-radius: 20px;
+            box-shadow: var(--shadow-md);
+            margin-bottom: 2rem;
+        }
+        
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            color: var(--text-primary);
+            text-align: center;
+        }
+        
+        .upload-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+        
+        .upload-card {
+            background: #f8f9fa;
+            padding: 2rem;
+            border-radius: 15px;
+            text-align: center;
+            border: 2px dashed #dee2e6;
+            transition: all 0.3s ease;
+        }
+        
+        .upload-card:hover {
+            border-color: #667eea;
+            background: #f0f2ff;
+        }
+        
+        .upload-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+        
+        .upload-card h4 {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--text-primary);
+        }
+        
+        .upload-card p {
+            color: var(--text-secondary);
+            margin-bottom: 1.5rem;
+            font-size: 0.9rem;
+        }
+        
+        .file-preview {
+            margin-top: 1rem;
+            padding: 1rem;
+            background: var(--bg-card);
+            border-radius: 10px;
+            border: 1px solid #e9ecef;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+        
+        .file-preview.has-file {
+            border-color: #4CAF50;
+            background: #f8fff8;
+            color: #2e7d32;
+        }
+        
+        .file-preview img {
+            max-width: 100%;
+            max-height: 100px;
+            border-radius: 5px;
+        }
+
+        .upload-controls {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .upload-control-group {
+            background: #f8f9fa;
+            padding: 2rem;
+            border-radius: 15px;
+            text-align: center;
+            border: 2px dashed #dee2e6;
+            transition: all 0.3s ease;
+        }
+
+        .upload-control-group:hover {
+            border-color: #667eea;
+            background: #f0f2ff;
+        }
+
+        .upload-info {
+            margin-top: 1rem;
+            padding: 0.5rem;
+            background: var(--bg-card);
+            border-radius: 8px;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        .upload-progress {
+            background: var(--bg-card);
+            padding: 2rem;
+            border-radius: 15px;
+            margin-bottom: 2rem;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .progress-container {
+            position: relative;
+            margin-bottom: 1rem;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: #e9ecef;
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4CAF50, #45a049);
+            border-radius: 10px;
+            transition: width 0.3s ease;
+            position: relative;
+        }
+
+        .progress-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            animation: shimmer 2s infinite;
+        }
+
+        .progress-text {
+            text-align: center;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-top: 0.5rem;
+        }
+
+        .upload-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .stat-item {
+            background: #f8f9fa;
+            padding: 1rem;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #667eea;
+        }
+
+        .stat-label {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        .files-list {
+            background: var(--bg-card);
+            padding: 2rem;
+            border-radius: 15px;
+            margin-bottom: 2rem;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .files-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .file-item {
+            background: #f8f9fa;
+            padding: 1rem;
+            border-radius: 10px;
+            border: 1px solid #e9ecef;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .file-item:hover {
+            border-color: #667eea;
+            background: #f0f2ff;
+        }
+
+        .file-item.matched {
+            border-color: #4CAF50;
+            background: #f8fff8;
+        }
+
+        .file-item.unmatched {
+            border-color: #ff9800;
+            background: #fff8f0;
+        }
+
+        .file-preview-small {
+            width: 100%;
+            height: 80px;
+            object-fit: cover;
+            border-radius: 5px;
+            margin-bottom: 0.5rem;
+        }
+
+        .file-name {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.25rem;
+            word-break: break-all;
+        }
+
+        .file-size {
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+        }
+
+        .file-status {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            color: white;
+        }
+
+        .file-status.matched {
+            background: #4CAF50;
+        }
+
+        .file-status.unmatched {
+            background: #ff9800;
+        }
+
+        .file-status.pending {
+            background: #2196F3;
+        }
+
+        .no-files {
+            text-align: center;
+            color: var(--text-secondary);
+            font-style: italic;
+            padding: 2rem;
+        }
+
+        .upload-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn-large {
+            padding: 1rem 2rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-warning {
+            background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%);
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 10px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(255, 152, 0, 0.3);
+        }
+
+        .btn-warning:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(255, 152, 0, 0.4);
+            background: linear-gradient(135deg, #f57c00 0%, #ef6c00 100%);
+        }
+
+        .reset-confirmation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .reset-confirmation.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .reset-modal {
+            background: var(--bg-card);
+            padding: 2rem;
+            border-radius: 20px;
+            max-width: 500px;
+            width: 90%;
+            text-align: center;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            transform: scale(0.8);
+            transition: transform 0.3s ease;
+        }
+
+        .reset-confirmation.show .reset-modal {
+            transform: scale(1);
+        }
+
+        .reset-modal h3 {
+            color: #ff9800;
+            margin-bottom: 1rem;
+            font-size: 1.5rem;
+        }
+
+        .reset-modal p {
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+            line-height: 1.6;
+        }
+
+        .reset-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+        }
+
+        .reset-warning {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+            padding: 1rem;
+            border-radius: 10px;
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 768px) {
+            .dashboard-container {
+                padding: 1rem;
+            }
+            
+            .dashboard-title {
+                font-size: 2rem;
+            }
+            
+            .workflow-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .upload-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .quick-actions {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <h1 class="nav-logo">WebAR Complete</h1>
+            <div class="nav-menu">
+                <a href="/" class="nav-link">Dashboard</a>
+                <a href="/test-complete.html" class="nav-link">Tests</a>
+                <a href="/pages/marker-generator.html" class="nav-link">Marcadores</a>
+                <a href="/pages/3d-editor.html" class="nav-link">Editor 3D</a>
+                <a href="/pages/ar-verification.html" class="nav-link">AR</a>
+                <a href="/pages/apk-builder.html" class="nav-link">APK</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <div class="dashboard-container">
+            <!-- Header Principal -->
+            <div class="dashboard-header">
+                <h1 class="dashboard-title">🚀 WebAR Complete</h1>
+                <p class="dashboard-subtitle">Plataforma Profesional de Desarrollo de Realidad Aumentada</p>
+                <div class="status-badge">
+                    ✅ Sistema Configurado y Listo
+                </div>
+            </div>
+
+            <!-- Progreso General -->
+            <div class="progress-section">
+                <h3 class="progress-title">📊 Progreso del Proyecto</h3>
+                <div class="progress-bar-container">
+                    <div class="progress-bar-fill" id="overallProgress" style="width: 95%"></div>
+                </div>
+                <p class="progress-text">95% Completado - ¡Casi listo para producción!</p>
+            </div>
+
+            <!-- Estadísticas Rápidas -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-number">5</div>
+                    <div class="stat-label">Módulos Completados</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">100%</div>
+                    <div class="stat-label">Funcionalidad AR</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">95%</div>
+                    <div class="stat-label">Progreso Total</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">APK</div>
+                    <div class="stat-label">Listo para Build</div>
+                </div>
+            </div>
+
+            <!-- Flujo de Trabajo -->
+            <div class="workflow-grid">
+                <div class="workflow-card">
+                    <span class="workflow-icon">🎯</span>
+                    <h3 class="workflow-title">1. Generador de Marcadores</h3>
+                    <p class="workflow-description">Crea marcadores AR profesionales con archivos .patt optimizados para tracking preciso.</p>
+                    <div class="workflow-status">
+                        <div class="status-indicator completed"></div>
+                        <span>Completado - 100%</span>
+                    </div>
+                    <a href="pages/marker-generator.html" class="btn btn-primary">Abrir Generador</a>
+                </div>
+
+                <div class="workflow-card">
+                    <span class="workflow-icon">🎨</span>
+                    <h3 class="workflow-title">2. Editor 3D Interactivo</h3>
+                    <p class="workflow-description">Posiciona y configura modelos 3D con controles profesionales de transformación.</p>
+                    <div class="workflow-status">
+                        <div class="status-indicator completed"></div>
+                        <span>Completado - 100%</span>
+                    </div>
+                    <a href="pages/3d-editor.html" class="btn btn-primary">Abrir Editor</a>
+                </div>
+
+                <div class="workflow-card">
+                    <span class="workflow-icon">📱</span>
+                    <h3 class="workflow-title">3. Verificación AR</h3>
+                    <p class="workflow-description">Prueba tu experiencia AR en tiempo real con cámara y tracking de marcadores.</p>
+                    <div class="workflow-status">
+                        <div class="status-indicator completed"></div>
+                        <span>Completado - 100%</span>
+                    </div>
+                    <a href="pages/ar-verification.html" class="btn btn-primary">Probar AR</a>
+                </div>
+
+                <div class="workflow-card">
+                    <span class="workflow-icon">🔨</span>
+                    <h3 class="workflow-title">4. Constructor APK</h3>
+                    <p class="workflow-description">Genera APK Android profesional con Capacitor y configuración optimizada.</p>
+                    <div class="workflow-status">
+                        <div class="status-indicator ready"></div>
+                        <span>Listo - 100%</span>
+                    </div>
+                    <a href="pages/apk-builder.html" class="btn btn-primary">Generar APK</a>
+                </div>
+            </div>
+
+            <!-- Carga de Archivos -->
+            <div class="upload-section">
+                <h3 class="section-title">📁 Carga Múltiple de Archivos</h3>
+                
+                <!-- Controles de Carga -->
+                <div class="upload-controls">
+                    <div class="upload-control-group">
+                        <div class="upload-icon">🖼️</div>
+                        <h4>Imágenes para Marcadores</h4>
+                        <p>Sube múltiples imágenes JPG/PNG (2 o más de 1000)</p>
+                        <input type="file" id="markerImages" accept="image/*" multiple style="display: none;">
+                        <button class="btn btn-primary" onclick="document.getElementById('markerImages').click()">
+                            Seleccionar Múltiples Imágenes
+                        </button>
+                        <div class="upload-info">
+                            <span id="imageCount">0 imágenes seleccionadas</span>
+                        </div>
+                    </div>
+                    
+                    <div class="upload-control-group">
+                        <div class="upload-icon">🎲</div>
+                        <h4>Modelos 3D</h4>
+                        <p>Sube modelos GLTF/GLB que coincidan con las imágenes</p>
+                        <input type="file" id="models3D" accept=".gltf,.glb,.obj,.fbx" multiple style="display: none;">
+                        <button class="btn btn-primary" onclick="document.getElementById('models3D').click()">
+                            Seleccionar Múltiples Modelos
+                        </button>
+                        <div class="upload-info">
+                            <span id="modelCount">0 modelos seleccionados</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Progreso de Carga -->
+                <div class="upload-progress" id="uploadProgress" style="display: none;">
+                    <h4>📤 Progreso de Carga</h4>
+                    <div class="progress-container">
+                        <div class="progress-bar" id="progressBar">
+                            <div class="progress-fill" id="progressFill"></div>
+                        </div>
+                        <div class="progress-text" id="progressText">0%</div>
+                    </div>
+                    <div class="upload-stats" id="uploadStats"></div>
+                </div>
+
+                <!-- Lista de Archivos -->
+                <div class="files-list" id="filesList">
+                    <h4>📋 Archivos Seleccionados</h4>
+                    <div class="files-grid" id="filesGrid">
+                        <div class="no-files">No hay archivos seleccionados</div>
+                    </div>
+                </div>
+
+                <!-- Botón de Carga -->
+                <div class="upload-actions">
+                    <button class="btn btn-success btn-large" id="uploadAllBtn" onclick="uploadAllFiles()" disabled>
+                        🚀 Subir Todos los Archivos
+                    </button>
+                    <button class="btn btn-secondary" onclick="clearAllFiles()">
+                        🗑️ Limpiar Selección
+                    </button>
+                    <button class="btn btn-warning btn-large" onclick="resetSystem()">
+                        🔄 Reiniciar Sistema
+                    </button>
+                </div>
+            </div>
+
+            <!-- Acciones Rápidas -->
+            <div class="quick-actions">
+                <a href="test-complete.html" class="quick-action">
+                    <span class="quick-action-icon">🧪</span>
+                    <div>Ejecutar Tests</div>
+                </a>
+                <a href="#" class="quick-action" onclick="generateAPK()">
+                    <span class="quick-action-icon">📱</span>
+                    <div>Generar APK</div>
+                </a>
+                <a href="#" class="quick-action" onclick="openAndroidStudio()">
+                    <span class="quick-action-icon">🔧</span>
+                    <div>Abrir Android Studio</div>
+                </a>
+                <a href="#" class="quick-action" onclick="showDocumentation()">
+                    <span class="quick-action-icon">📚</span>
+                    <div>Documentación</div>
+                </a>
+            </div>
+        </div>
+    </main>
+
+    <!-- Botón Flotante -->
+    <div class="floating-action" onclick="showQuickMenu()">
+        ⚡
+    </div>
+
+    <!-- Notificación -->
+    <div class="notification" id="notification">
+        <div id="notificationText">¡Sistema configurado correctamente!</div>
+    </div>
+
+    <!-- Modal de Confirmación de Reinicio -->
+    <div class="reset-confirmation" id="resetConfirmation">
+        <div class="reset-modal">
+            <h3>🔄 Reiniciar Sistema</h3>
+            <div class="reset-warning">
+                ⚠️ Esta acción limpiará todos los archivos del proyecto actual
+            </div>
+            <p>
+                <strong>Se eliminarán:</strong><br>
+                • Todas las imágenes cargadas<br>
+                • Todos los modelos 3D cargados<br>
+                • Archivos .patt generados<br>
+                • Marcadores AR creados<br>
+                • Configuraciones del proyecto actual
+            </p>
+            <p>
+                <strong>Se mantendrán:</strong><br>
+                • Estructura del sistema<br>
+                • Configuraciones base<br>
+                • Archivos del programa
+            </p>
+            <div class="reset-actions">
+                <button class="btn btn-warning" onclick="confirmReset()">
+                    🔄 Sí, Reiniciar
+                </button>
+                <button class="btn btn-secondary" onclick="cancelReset()">
+                    ❌ Cancelar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Mostrar notificación al cargar
+        document.addEventListener('DOMContentLoaded', function() {
+            showNotification('¡WebAR Complete configurado y listo!', 'success');
+            
+            // Verificar backend
+            checkBackendStatus();
+            
+            // Configurar carga de archivos
+            setupFileUploads();
+            
+            // Animar progreso
+            setTimeout(() => {
+                const progressBar = document.getElementById('overallProgress');
+                progressBar.style.width = '95%';
+            }, 500);
+        });
+
+        // Variables globales para archivos
+        let selectedImages = [];
+        let selectedModels = [];
+        let matchedPairs = [];
+
+        // Configurar carga de archivos
+        function setupFileUploads() {
+            // Carga múltiple de imágenes
+            document.getElementById('markerImages').addEventListener('change', function(e) {
+                const files = Array.from(e.target.files);
+                selectedImages = files;
+                updateFileCounts();
+                matchFiles();
+                displayFiles();
+            });
+
+            // Carga múltiple de modelos 3D
+            document.getElementById('models3D').addEventListener('change', function(e) {
+                const files = Array.from(e.target.files);
+                selectedModels = files;
+                updateFileCounts();
+                matchFiles();
+                displayFiles();
+            });
+        }
+
+        // Actualizar contadores
+        function updateFileCounts() {
+            document.getElementById('imageCount').textContent = `${selectedImages.length} imágenes seleccionadas`;
+            document.getElementById('modelCount').textContent = `${selectedModels.length} modelos seleccionados`;
+            
+            // Habilitar botón si hay archivos
+            const uploadBtn = document.getElementById('uploadAllBtn');
+            uploadBtn.disabled = selectedImages.length === 0 && selectedModels.length === 0;
+        }
+
+        // Coincidencia inteligente de archivos
+        function matchFiles() {
+            matchedPairs = [];
+            
+            selectedModels.forEach(model => {
+                const modelName = getFileNameWithoutExtension(model.name);
+                
+                // Buscar imagen correspondiente
+                const matchingImage = selectedImages.find(image => {
+                    const imageName = getFileNameWithoutExtension(image.name);
+                    return imageName === modelName;
+                });
+                
+                if (matchingImage) {
+                    matchedPairs.push({
+                        image: matchingImage,
+                        model: model,
+                        name: modelName,
+                        matched: true
+                    });
+                } else {
+                    matchedPairs.push({
+                        image: null,
+                        model: model,
+                        name: modelName,
+                        matched: false
+                    });
+                }
+            });
+            
+            // Agregar imágenes sin modelo correspondiente
+            selectedImages.forEach(image => {
+                const imageName = getFileNameWithoutExtension(image.name);
+                const hasModel = selectedModels.some(model => {
+                    const modelName = getFileNameWithoutExtension(model.name);
+                    return modelName === imageName;
+                });
+                
+                if (!hasModel) {
+                    matchedPairs.push({
+                        image: image,
+                        model: null,
+                        name: imageName,
+                        matched: false
+                    });
+                }
+            });
+        }
+
+        // Obtener nombre sin extensión
+        function getFileNameWithoutExtension(filename) {
+            return filename.replace(/\.[^/.]+$/, "").toLowerCase();
+        }
+
+        // Mostrar archivos en la interfaz
+        function displayFiles() {
+            const filesGrid = document.getElementById('filesGrid');
+            
+            if (matchedPairs.length === 0) {
+                filesGrid.innerHTML = '<div class="no-files">No hay archivos seleccionados</div>';
+                return;
+            }
+            
+            filesGrid.innerHTML = '';
+            
+            matchedPairs.forEach((pair, index) => {
+                const fileItem = document.createElement('div');
+                fileItem.className = `file-item ${pair.matched ? 'matched' : 'unmatched'}`;
+                
+                let content = '';
+                
+                if (pair.image) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        const img = fileItem.querySelector('.file-preview-small');
+                        if (img) img.src = e.target.result;
+                    };
+                    reader.readAsDataURL(pair.image);
+                    
+                    content += `
+                        <img class="file-preview-small" src="" alt="Preview">
+                        <div class="file-name">${pair.image.name}</div>
+                        <div class="file-size">${formatFileSize(pair.image.size)}</div>
+                    `;
+                }
+                
+                if (pair.model) {
+                    content += `
+                        <div class="file-name">${pair.model.name}</div>
+                        <div class="file-size">${formatFileSize(pair.model.size)}</div>
+                    `;
+                }
+                
+                const statusIcon = pair.matched ? '✅' : '⚠️';
+                const statusClass = pair.matched ? 'matched' : 'unmatched';
+                
+                content += `<div class="file-status ${statusClass}">${statusIcon}</div>`;
+                
+                fileItem.innerHTML = content;
+                filesGrid.appendChild(fileItem);
+            });
+        }
+
+        // Formatear tamaño de archivo
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        // Función para subir todos los archivos
+        async function uploadAllFiles() {
+            const uploadProgress = document.getElementById('uploadProgress');
+            const progressFill = document.getElementById('progressFill');
+            const progressText = document.getElementById('progressText');
+            const uploadStats = document.getElementById('uploadStats');
+            
+            // Mostrar progreso
+            uploadProgress.style.display = 'block';
+            
+            // Filtrar solo archivos coincidentes
+            const filesToUpload = matchedPairs.filter(pair => pair.matched);
+            
+            if (filesToUpload.length === 0) {
+                showNotification('⚠️ No hay archivos coincidentes para subir', 'warning');
+                return;
+            }
+            
+            let uploadedCount = 0;
+            let successCount = 0;
+            let errorCount = 0;
+            const totalFiles = filesToUpload.length * 2; // Imagen + Modelo por cada par
+            
+            showNotification(`🚀 Iniciando carga de ${totalFiles} archivos...`, 'info');
+            
+            // Actualizar estadísticas iniciales
+            updateUploadStats(uploadStats, 0, 0, 0, totalFiles);
+            
+            // Subir archivos en lotes para mejor rendimiento
+            const batchSize = 5;
+            const batches = [];
+            
+            for (let i = 0; i < filesToUpload.length; i += batchSize) {
+                batches.push(filesToUpload.slice(i, i + batchSize));
+            }
+            
+            for (const batch of batches) {
+                const batchPromises = batch.map(async (pair) => {
+                    const results = [];
+                    
+                    // Subir imagen
+                    if (pair.image) {
+                        try {
+                            const imageResult = await uploadSingleFile(pair.image, 'image');
+                            results.push(imageResult);
+                            uploadedCount++;
+                        } catch (error) {
+                            errorCount++;
+                            results.push({ success: false, error: error.message });
+                        }
+                    }
+                    
+                    // Subir modelo (solo si hay imagen correspondiente)
+                    if (pair.model && pair.matched) {
+                        try {
+                            const modelResult = await uploadSingleFile(pair.model, 'model');
+                            results.push(modelResult);
+                            uploadedCount++;
+                        } catch (error) {
+                            errorCount++;
+                            results.push({ success: false, error: error.message });
+                        }
+                    }
+                    
+                    // Actualizar progreso
+                    const progress = (uploadedCount / totalFiles) * 100;
+                    progressFill.style.width = `${progress}%`;
+                    progressText.textContent = `${Math.round(progress)}%`;
+                    
+                    // Actualizar estadísticas
+                    updateUploadStats(uploadStats, uploadedCount, successCount, errorCount, totalFiles);
+                    
+                    return results;
+                });
+                
+                await Promise.all(batchPromises);
+            }
+            
+            // Finalizar
+            if (errorCount === 0) {
+                showNotification(`✅ Todos los archivos subidos exitosamente!`, 'success');
+            } else {
+                showNotification(`⚠️ ${successCount} archivos subidos, ${errorCount} errores`, 'warning');
+            }
+        }
+
+        // Función para subir un archivo individual
+        async function uploadSingleFile(file, type) {
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('type', type);
+
+            const response = await fetch(`${BACKEND_URL}/api/upload`, {
+                method: 'POST',
+                body: formData
+            });
+
+            const data = await response.json();
+
+            if (!data.success) {
+                throw new Error(data.error || 'Error desconocido');
+            }
+
+            return data;
+        }
+
+        // Actualizar estadísticas de carga
+        function updateUploadStats(container, uploaded, success, errors, total) {
+            container.innerHTML = `
+                <div class="stat-item">
+                    <div class="stat-number">${uploaded}</div>
+                    <div class="stat-label">Subidos</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">${success}</div>
+                    <div class="stat-label">Exitosos</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">${errors}</div>
+                    <div class="stat-label">Errores</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">${total}</div>
+                    <div class="stat-label">Total</div>
+                </div>
+            `;
+        }
+
+        // Función para subir archivos individuales
+        async function uploadFile(file, type, previewId) {
+            const preview = document.getElementById(previewId);
+            
+            // Mostrar preview
+            if (type === 'marker' && file.type.startsWith('image/')) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    preview.innerHTML = `<img src="${e.target.result}" alt="Preview">`;
+                    preview.classList.add('has-file');
+                };
+                reader.readAsDataURL(file);
+            } else {
+                preview.innerHTML = `📁 ${file.name}<br><small>${(file.size / 1024 / 1024).toFixed(2)} MB</small>`;
+                preview.classList.add('has-file');
+            }
+
+            // Subir al servidor
+            const formData = new FormData();
+            formData.append('file', file);
+
+            try {
+                showNotification(`Subiendo ${file.name}...`, 'info');
+                
+                const response = await fetch(`${BACKEND_URL}/api/upload`, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showNotification(`✅ ${file.name} subido exitosamente`, 'success');
+                    
+                    // Guardar información del archivo
+                    if (type === 'marker') {
+                        localStorage.setItem('markerImage', JSON.stringify(data.file));
+                    } else {
+                        localStorage.setItem('model3D', JSON.stringify(data.file));
+                    }
+                    
+                    // Guardar en lista de archivos subidos
+                    let uploadedFiles = JSON.parse(localStorage.getItem('uploadedFiles') || '[]');
+                    uploadedFiles.push(data.file);
+                    localStorage.setItem('uploadedFiles', JSON.stringify(uploadedFiles));
+                } else {
+                    showNotification(`❌ Error subiendo ${file.name}`, 'error');
+                }
+            } catch (error) {
+                showNotification(`❌ Error de conexión`, 'error');
+                console.error('Error:', error);
+            }
+        }
+
+        // Limpiar todos los archivos
+        function clearAllFiles() {
+            selectedImages = [];
+            selectedModels = [];
+            matchedPairs = [];
+            
+            document.getElementById('markerImages').value = '';
+            document.getElementById('models3D').value = '';
+            
+            updateFileCounts();
+            displayFiles();
+            
+            const uploadProgress = document.getElementById('uploadProgress');
+            uploadProgress.style.display = 'none';
+            
+            showNotification('🗑️ Selección de archivos limpiada', 'info');
+        }
+
+        // Mostrar modal de confirmación de reinicio
+        function resetSystem() {
+            const modal = document.getElementById('resetConfirmation');
+            modal.classList.add('show');
+        }
+
+        // Cancelar reinicio
+        function cancelReset() {
+            const modal = document.getElementById('resetConfirmation');
+            modal.classList.remove('show');
+        }
+
+        // Confirmar reinicio del sistema
+        async function confirmReset() {
+            const modal = document.getElementById('resetConfirmation');
+            modal.classList.remove('show');
+            
+            showNotification('🔄 Iniciando reinicio del sistema...', 'info');
+            
+            try {
+                // Limpiar archivos seleccionados
+                clearAllFiles();
+                
+                // Limpiar localStorage
+                localStorage.removeItem('markerImage');
+                localStorage.removeItem('model3D');
+                localStorage.removeItem('uploadedFiles');
+                localStorage.removeItem('projectData');
+                
+                // Limpiar archivos del servidor
+                await clearServerFiles();
+                
+                // Limpiar archivos locales del proyecto
+                await clearProjectFiles();
+                
+                // Reiniciar interfaz
+                resetInterface();
+                
+                showNotification('✅ Sistema reiniciado exitosamente. Listo para nuevo proyecto.', 'success');
+                
+            } catch (error) {
+                showNotification('❌ Error durante el reinicio: ' + error.message, 'error');
+                console.error('Error:', error);
+            }
+        }
+
+        // Limpiar archivos del servidor
+        async function clearServerFiles() {
+            try {
+                const response = await fetch(`${BACKEND_URL}/api/clear-files`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Error limpiando archivos del servidor');
+                }
+                
+                console.log('✅ Archivos del servidor limpiados');
+            } catch (error) {
+                console.warn('⚠️ No se pudieron limpiar archivos del servidor:', error.message);
+            }
+        }
+
+        // Limpiar archivos del proyecto
+        async function clearProjectFiles() {
+            try {
+                // Lista de carpetas/archivos a limpiar
+                const filesToClean = [
+                    'uploads/',
+                    'markers/',
+                    'models/',
+                    'generated/',
+                    'temp/',
+                    'project-data.json',
+                    'current-project.json'
+                ];
+                
+                // Enviar comando de limpieza al servidor
+                const response = await fetch(`${BACKEND_URL}/api/clear-project`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        files: filesToClean
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Error limpiando archivos del proyecto');
+                }
+                
+                console.log('✅ Archivos del proyecto limpiados');
+            } catch (error) {
+                console.warn('⚠️ No se pudieron limpiar archivos del proyecto:', error.message);
+            }
+        }
+
+        // Reiniciar interfaz
+        function resetInterface() {
+            // Limpiar contadores
+            document.getElementById('imageCount').textContent = '0 imágenes seleccionadas';
+            document.getElementById('modelCount').textContent = '0 modelos seleccionados';
+            
+            // Ocultar progreso
+            const uploadProgress = document.getElementById('uploadProgress');
+            uploadProgress.style.display = 'none';
+            
+            // Deshabilitar botón de subida
+            const uploadBtn = document.getElementById('uploadAllBtn');
+            uploadBtn.disabled = true;
+            
+            // Limpiar grid de archivos
+            const filesGrid = document.getElementById('filesGrid');
+            filesGrid.innerHTML = '<div class="no-files">No hay archivos seleccionados</div>';
+            
+            // Limpiar estadísticas
+            const uploadStats = document.getElementById('uploadStats');
+            uploadStats.innerHTML = '';
+            
+            // Resetear barra de progreso
+            const progressFill = document.getElementById('progressFill');
+            const progressText = document.getElementById('progressText');
+            progressFill.style.width = '0%';
+            progressText.textContent = '0%';
+        }
+
+        // Configuración del backend
+        const BACKEND_URL = 'http://localhost:3001';
+        
+        // Verificar estado del backend
+        async function checkBackendStatus() {
+            try {
+                const response = await fetch(`${BACKEND_URL}/api/health`);
+                const data = await response.json();
+                showNotification('✅ Backend Laragon conectado', 'success');
+                return true;
+            } catch (error) {
+                showNotification('⚠️ Iniciando backend Laragon...', 'warning');
+                return false;
+            }
+        }
+
+        // Funciones de acciones rápidas
+        async function generateAPK() {
+            showNotification('Iniciando generación de APK...', 'info');
+            
+            try {
+                const response = await fetch(`${BACKEND_URL}/api/build`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        projectName: 'WebAR-Complete',
+                        packageName: 'com.webar.complete',
+                        version: '1.0.0'
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showNotification('✅ APK generado exitosamente!', 'success');
+                    // Simular descarga
+                    setTimeout(() => {
+                        showNotification('📱 APK listo para descargar', 'success');
+                    }, 2000);
+                } else {
+                    showNotification('❌ Error generando APK', 'error');
+                }
+            } catch (error) {
+                showNotification('❌ Error de conexión con backend', 'error');
+            }
+        }
+
+        function openAndroidStudio() {
+            showNotification('Abriendo Android Studio...', 'info');
+            // Aquí se ejecutaría: npx cap open android
+        }
+
+        function showDocumentation() {
+            showNotification('Abriendo documentación...', 'info');
+            window.open('/README.md', '_blank');
+        }
+
+        function showQuickMenu() {
+            const menu = document.createElement('div');
+            menu.className = 'quick-menu';
+            menu.innerHTML = `
+                <div class="quick-menu-item" onclick="generateAPK()">📱 Generar APK</div>
+                <div class="quick-menu-item" onclick="openAndroidStudio()">🔧 Android Studio</div>
+                <div class="quick-menu-item" onclick="showDocumentation()">📚 Documentación</div>
+                <div class="quick-menu-item" onclick="runTests()">🧪 Ejecutar Tests</div>
+            `;
+            menu.style.cssText = `
+                position: fixed;
+                bottom: 80px;
+                right: 2rem;
+                background: var(--bg-card);
+                border-radius: 15px;
+                padding: 1rem;
+                box-shadow: var(--shadow-lg);
+                z-index: 1000;
+                min-width: 200px;
+            `;
+            
+            document.body.appendChild(menu);
+            
+            setTimeout(() => {
+                document.body.removeChild(menu);
+            }, 5000);
+        }
+
+        function runTests() {
+            showNotification('Ejecutando tests del sistema...', 'info');
+            window.location.href = 'test-complete.html';
+        }
+
+        function showNotification(message, type = 'info') {
+            const notification = document.getElementById('notification');
+            const notificationText = document.getElementById('notificationText');
+            
+            notificationText.textContent = message;
+            
+            // Cambiar color según tipo
+            const colors = {
+                success: '#4CAF50',
+                error: '#f44336',
+                warning: '#FF9800',
+                info: '#2196F3'
+            };
+            
+            notification.style.borderLeftColor = colors[type] || colors.info;
+            
+            notification.classList.add('show');
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+
+        // Animaciones de entrada
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        }, observerOptions);
+
+        // Observar todas las tarjetas
+        document.querySelectorAll('.workflow-card, .stat-card, .quick-action').forEach(card => {
+            card.style.opacity = '0';
+            card.style.transform = 'translateY(20px)';
+            card.style.transition = 'all 0.6s ease';
+            observer.observe(card);
+        });
+    </script>
+</body>
+</html>

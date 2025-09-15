@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>WebAR Complete - Laragon</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+        
+        .container {
+            text-align: center;
+            max-width: 800px;
+            padding: 2rem;
+        }
+        
+        .logo {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .title {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .subtitle {
+            font-size: 1.3rem;
+            margin-bottom: 2rem;
+            opacity: 0.9;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            background: rgba(255,255,255,0.2);
+            padding: 0.8rem 1.5rem;
+            border-radius: 25px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 2rem;
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255,255,255,0.3);
+        }
+        
+        .buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 2rem;
+        }
+        
+        .btn {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            padding: 1rem 2rem;
+            border-radius: 25px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255,255,255,0.3);
+            font-size: 1rem;
+        }
+        
+        .btn:hover {
+            background: rgba(255,255,255,0.3);
+            transform: translateY(-2px);
+            color: white;
+            text-decoration: none;
+        }
+        
+        .btn.primary {
+            background: rgba(255,255,255,0.9);
+            color: #667eea;
+            font-weight: 700;
+        }
+        
+        .btn.primary:hover {
+            background: white;
+            color: #667eea;
+        }
+        
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+        
+        .info-card {
+            background: rgba(255,255,255,0.1);
+            padding: 1.5rem;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        
+        .info-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+        
+        .info-text {
+            opacity: 0.9;
+            font-size: 0.9rem;
+        }
+        
+        .loading {
+            display: none;
+            margin-top: 2rem;
+        }
+        
+        .spinner {
+            border: 3px solid rgba(255,255,255,0.3);
+            border-top: 3px solid white;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .countdown {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-top: 1rem;
+        }
+        
+        @media (max-width: 768px) {
+            .title {
+                font-size: 2rem;
+            }
+            
+            .buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .btn {
+                width: 100%;
+                max-width: 300px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo">🚀</div>
+        <h1 class="title">WebAR Complete</h1>
+        <p class="subtitle">Plataforma Profesional de Desarrollo de Realidad Aumentada</p>
+        
+        <div class="status-badge">
+            ✅ Sistema Configurado y Listo
+        </div>
+        
+        <div class="buttons">
+            <a href="/dashboard.html" class="btn primary">🚀 Dashboard Profesional</a>
+            <a href="/system-status.html" class="btn">📊 Estado del Sistema</a>
+            <a href="/test-complete.html" class="btn">🧪 Ejecutar Tests</a>
+        </div>
+        
+        <div class="info-grid">
+            <div class="info-card">
+                <div class="info-title">🎯 Marcadores AR</div>
+                <div class="info-text">Genera archivos .patt profesionales</div>
+            </div>
+            <div class="info-card">
+                <div class="info-title">🎨 Editor 3D</div>
+                <div class="info-text">Controles interactivos con Three.js</div>
+            </div>
+            <div class="info-card">
+                <div class="info-title">📱 Verificación AR</div>
+                <div class="info-text">Prueba con cámara en tiempo real</div>
+            </div>
+            <div class="info-card">
+                <div class="info-title">🔨 Constructor APK</div>
+                <div class="info-text">Genera APK Android con Capacitor</div>
+            </div>
+        </div>
+        
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>Redirigiendo al Dashboard...</p>
+            <div class="countdown" id="countdown">5</div>
+        </div>
+    </div>
+
+    <script>
+        // Auto-redirect después de 5 segundos
+        let countdown = 5;
+        const countdownElement = document.getElementById('countdown');
+        const loadingElement = document.getElementById('loading');
+        
+        function startCountdown() {
+            const timer = setInterval(() => {
+                countdown--;
+                countdownElement.textContent = countdown;
+                
+                if (countdown <= 0) {
+                    clearInterval(timer);
+                    window.location.href = '/dashboard.html';
+                }
+            }, 1000);
+        }
+        
+        // Mostrar countdown después de 2 segundos
+        setTimeout(() => {
+            loadingElement.style.display = 'block';
+            startCountdown();
+        }, 2000);
+        
+        // Detener countdown si el usuario interactúa
+        document.addEventListener('click', () => {
+            loadingElement.style.display = 'none';
+        });
+        
+        // Mostrar información del sistema
+        console.log('🚀 WebAR Complete - Laragon');
+        console.log('📱 Sistema configurado y listo');
+        console.log('🌐 URLs disponibles:');
+        console.log('   • Dashboard: /dashboard.html');
+        console.log('   • Estado: /system-status.html');
+        console.log('   • Tests: /test-complete.html');
+        console.log('   • Marcadores: /pages/marker-generator.html');
+        console.log('   • Editor 3D: /pages/3d-editor.html');
+        console.log('   • Verificación AR: /pages/ar-verification.html');
+        console.log('   • Constructor APK: /pages/apk-builder.html');
+    </script>
+</body>
+</html>

@@ -1,0 +1,33 @@
+Archivo,Categoría,Estado,Descripción,Tecnología,Módulo
+package.json,Configuración,✅,"Dependencias NPM, scripts, metadatos del proyecto",NPM,Core
+capacitor.config.ts,Configuración,✅,Configuración Capacitor para APK Android,Capacitor,APK
+vite.config.js,Configuración,✅,Configuración Vite para desarrollo y build,Vite,Build
+README.md,Documentación,✅,Documentación completa del proyecto e instalación,Markdown,Doc
+install.sh,Automatización,✅,Script de instalación automática (Linux/Mac),Bash,Setup
+install.ps1,Automatización,✅,Script de instalación automática (Windows),PowerShell,Setup
+index.html,Frontend,✅,Página principal con navegación y workflow,HTML5,Core
+marker-generator.html,Frontend,✅,Página generador de marcadores AR,HTML5,AR
+3d-editor.html,Frontend,📝,Editor 3D para posicionar modelos (pendiente),HTML5,3D
+ar-verification.html,Frontend,📝,Verificación AR con cámara (pendiente),HTML5,AR
+apk-builder.html,Frontend,📝,Constructor de APK (pendiente),HTML5,APK
+marker-generator.js,Frontend,✅,Lógica completa generación marcadores .patt,JavaScript,AR
+3d-editor.js,Frontend,📝,Editor 3D con Three.js TransformControls (pendiente),Three.js,3D
+ar-verification.js,Frontend,📝,AR.js + A-Frame para verificación (pendiente),AR.js,AR
+apk-builder.js,Frontend,📝,Interfaz construcción APK (pendiente),JavaScript,APK
+server.js,Backend,✅,Servidor Express completo con APIs,Node.js,Core
+styles.css,Frontend,✅,"Estilos principales, navegación, layout",CSS3,UI
+components.css,Frontend,✅,"Componentes UI específicos, formularios",CSS3,UI
+.env,Configuración,🤖,Variables de entorno (auto-creado),Env,Config
+.gitignore,Control,🤖,Archivos ignorados por Git (auto-creado),Git,Config
+start.sh,Automatización,🤖,Script inicio rápido (auto-creado),Bash,Setup
+start.ps1,Automatización,🤖,Script inicio Windows (auto-creado),PowerShell,Setup
+clean.sh,Automatización,🤖,Script limpieza temporal (auto-creado),Bash,Utils
+check-deps.sh,Automatización,🤖,Verificador dependencias (auto-creado),Bash,Utils
+pages/,Estructura,📁,Páginas HTML de la aplicación,Directory,Core
+js/,Estructura,📁,Lógica JavaScript modular,Directory,Core
+css/,Estructura,📁,Hojas de estilo CSS,Directory,UI
+assets/,Estructura,📁,"Recursos estáticos (modelos, imágenes)",Directory,Assets
+temp/,Estructura,📁,Archivos temporales y builds,Directory,Temp
+certs/,Estructura,📁,Certificados SSL para HTTPS,Directory,Security
+android/,Estructura,📁,Proyecto Android (se genera con Capacitor),Directory,APK
+node_modules/,Dependencias,📁,Dependencias NPM instaladas,Directory,NPM

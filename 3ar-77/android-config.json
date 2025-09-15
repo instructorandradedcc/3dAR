@@ -1,0 +1,41 @@
+{
+  "androidSetup": {
+    "recommendedPath": "F:\\linux\\3d-AR\\capacitor\\android",
+    "androidStudioPath": "D:\\androidstudio",
+    "sdkPath": "D:\\androidstudio\\sdk",
+    "reason": "Proyecto Capacitor ya configurado con permisos AR completos"
+  },
+  "projectConfig": {
+    "packageId": "com.webar.complete",
+    "appName": "WebAR Complete",
+    "targetSdk": 34,
+    "minSdk": 24,
+    "versionCode": 1,
+    "versionName": "1.0.0"
+  },
+  "arPermissions": [
+    "android.permission.CAMERA",
+    "android.permission.INTERNET",
+    "android.permission.RECORD_AUDIO",
+    "android.permission.READ_EXTERNAL_STORAGE",
+    "android.permission.WRITE_EXTERNAL_STORAGE"
+  ],
+  "arFeatures": [
+    "android.hardware.camera",
+    "android.hardware.camera.ar",
+    "android.hardware.camera.autofocus"
+  ],
+  "buildSteps": [
+    "1. Ejecutar setup-android.ps1",
+    "2. npm run build",
+    "3. npx cap sync android",
+    "4. cd android && ./gradlew assembleDebug"
+  ],
+  "outputPath": "android/app/build/outputs/apk/debug/",
+  "estimatedSize": "20-25MB",
+  "compatibility": {
+    "androidVersions": "7.0+ (API 24+)",
+    "devices": "Cámara + Acelerómetro + WebGL",
+    "browsers": "Chrome 90+, Firefox 90+, Safari 14+"
+  }
+}

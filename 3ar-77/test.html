@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test WebAR Complete</title>
+    <link rel="stylesheet" href="/css/styles.css">
+    <link rel="stylesheet" href="/css/components.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <h1 class="nav-logo">WebAR Complete - Test</h1>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <div class="container">
+            <div class="page-header">
+                <h1>🧪 Test de Funcionalidad</h1>
+                <p>Verificación de que todos los componentes funcionen correctamente</p>
+            </div>
+
+            <div class="form-section">
+                <h3>📋 Verificaciones</h3>
+                <div class="test-results" id="testResults">
+                    <div class="test-item">
+                        <span class="test-label">CSS Styles:</span>
+                        <span class="test-status" id="cssStatus">Verificando...</span>
+                    </div>
+                    <div class="test-item">
+                        <span class="test-label">JavaScript Modules:</span>
+                        <span class="test-status" id="jsStatus">Verificando...</span>
+                    </div>
+                    <div class="test-item">
+                        <span class="test-label">LocalStorage:</span>
+                        <span class="test-status" id="storageStatus">Verificando...</span>
+                    </div>
+                    <div class="test-item">
+                        <span class="test-label">WebGL Support:</span>
+                        <span class="test-status" id="webglStatus">Verificando...</span>
+                    </div>
+                    <div class="test-item">
+                        <span class="test-label">WebRTC Support:</span>
+                        <span class="test-status" id="webrtcStatus">Verificando...</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h3>🔗 Enlaces de Prueba</h3>
+                <div class="test-links">
+                    <a href="/" class="btn btn-primary">🏠 Página Principal</a>
+                    <a href="/pages/marker-generator.html" class="btn btn-secondary">📷 Generador de Marcadores</a>
+                    <a href="/pages/3d-editor.html" class="btn btn-secondary">🎯 Editor 3D</a>
+                    <a href="/pages/ar-verification.html" class="btn btn-secondary">📱 Verificación AR</a>
+                    <a href="/pages/apk-builder.html" class="btn btn-secondary">📦 Constructor APK</a>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h3>⚙️ Acciones de Prueba</h3>
+                <div class="test-actions">
+                    <button type="button" class="btn btn-primary" onclick="runTests()">🧪 Ejecutar Tests</button>
+                    <button type="button" class="btn btn-secondary" onclick="clearStorage()">🗑️ Limpiar Storage</button>
+                    <button type="button" class="btn btn-info" onclick="showSystemInfo()">ℹ️ Info del Sistema</button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script type="module">
+        // Test de funcionalidad
+        function updateTestStatus(id, status, message) {
+            const element = document.getElementById(id);
+            element.textContent = message;
+            element.className = `test-status ${status}`;
+        }
+
+        function runTests() {
+            // Test CSS
+            const hasStyles = document.querySelector('.navbar') && 
+                             getComputedStyle(document.querySelector('.navbar')).backgroundColor !== '';
+            updateTestStatus('cssStatus', hasStyles ? 'success' : 'error', 
+                           hasStyles ? '✅ OK' : '❌ Error');
+
+            // Test JavaScript
+            const hasJS = typeof window.WebARApp !== 'undefined';
+            updateTestStatus('jsStatus', hasJS ? 'success' : 'error', 
+                           hasJS ? '✅ OK' : '❌ Error');
+
+            // Test LocalStorage
+            try {
+                localStorage.setItem('test', 'test');
+                localStorage.removeItem('test');
+                updateTestStatus('storageStatus', 'success', '✅ OK');
+            } catch (e) {
+                updateTestStatus('storageStatus', 'error', '❌ Error');
+            }
+
+            // Test WebGL
+            try {
+                const canvas = document.createElement('canvas');
+                const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+                updateTestStatus('webglStatus', gl ? 'success' : 'error', 
+                               gl ? '✅ OK' : '❌ Error');
+            } catch (e) {
+                updateTestStatus('webglStatus', 'error', '❌ Error');
+            }
+
+            // Test WebRTC
+            const hasWebRTC = !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia);
+            updateTestStatus('webrtcStatus', hasWebRTC ? 'success' : 'error', 
+                           hasWebRTC ? '✅ OK' : '❌ Error');
+        }
+
+        function clearStorage() {
+            if (confirm('¿Limpiar todo el localStorage?')) {
+                localStorage.clear();
+                alert('LocalStorage limpiado');
+            }
+        }
+
+        function showSystemInfo() {
+            const info = {
+                'User Agent': navigator.userAgent,
+                'Platform': navigator.platform,
+                'Language': navigator.language,
+                'Online': navigator.onLine,
+                'Cookie Enabled': navigator.cookieEnabled,
+                'Screen': `${screen.width}x${screen.height}`,
+                'Viewport': `${window.innerWidth}x${window.innerHeight}`
+            };
+            
+            console.table(info);
+            alert('Información del sistema mostrada en la consola');
+        }
+
+        // Ejecutar tests automáticamente
+        setTimeout(runTests, 1000);
+
+        // Hacer funciones globales
+        window.runTests = runTests;
+        window.clearStorage = clearStorage;
+        window.showSystemInfo = showSystemInfo;
+    </script>
+
+    <style>
+        .test-results {
+            display: grid;
+            gap: 1rem;
+        }
+        
+        .test-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem;
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-base);
+            background: var(--color-surface);
+        }
+        
+        .test-label {
+            font-weight: var(--font-weight-medium);
+        }
+        
+        .test-status {
+            padding: 0.25rem 0.5rem;
+            border-radius: var(--radius-sm);
+            font-size: var(--font-size-sm);
+        }
+        
+        .test-status.success {
+            background: var(--color-success);
+            color: var(--color-white);
+        }
+        
+        .test-status.error {
+            background: var(--color-error);
+            color: var(--color-white);
+        }
+        
+        .test-links, .test-actions {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+    </style>
+</body>
+</html>
+

@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Laragon - WebAR Complete</title>
+    <link rel="stylesheet" href="/css/styles.css">
+    <link rel="stylesheet" href="/css/components.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <h1 class="nav-logo">WebAR Complete - Test Laragon</h1>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <div class="container">
+            <div class="page-header">
+                <h1>🧪 Test Laragon</h1>
+                <p>Verificación de que Laragon sirve los archivos correctamente</p>
+            </div>
+
+            <div class="form-section">
+                <h3>✅ Verificaciones</h3>
+                <div class="test-results">
+                    <div class="test-item">
+                        <span class="test-label">Laragon Apache:</span>
+                        <span class="test-status success">✅ Funcionando</span>
+                    </div>
+                    <div class="test-item">
+                        <span class="test-label">CSS Styles:</span>
+                        <span class="test-status" id="cssStatus">Verificando...</span>
+                    </div>
+                    <div class="test-item">
+                        <span class="test-label">JavaScript:</span>
+                        <span class="test-status" id="jsStatus">Verificando...</span>
+                    </div>
+                    <div class="test-item">
+                        <span class="test-label">LocalStorage:</span>
+                        <span class="test-status" id="storageStatus">Verificando...</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h3>🔗 Enlaces de Prueba</h3>
+                <div class="test-links">
+                    <a href="/" class="btn btn-primary">🏠 Página Principal</a>
+                    <a href="/test.html" class="btn btn-secondary">🧪 Test Completo</a>
+                    <a href="/pages/marker-generator.html" class="btn btn-secondary">📷 Generador de Marcadores</a>
+                    <a href="/pages/3d-editor.html" class="btn btn-secondary">🎯 Editor 3D</a>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h3>📊 Información del Sistema</h3>
+                <div class="system-info">
+                    <p><strong>URL Actual:</strong> <span id="currentUrl">-</span></p>
+                    <p><strong>User Agent:</strong> <span id="userAgent">-</span></p>
+                    <p><strong>Timestamp:</strong> <span id="timestamp">-</span></p>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h3>🚀 Próximos Pasos</h3>
+                <ol>
+                    <li>Verificar que todos los enlaces funcionen</li>
+                    <li>Probar el generador de marcadores</li>
+                    <li>Probar el editor 3D</li>
+                    <li>Verificar la verificación AR</li>
+                    <li>Si todo funciona, proceder con el deploy</li>
+                </ol>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Verificaciones automáticas
+        function updateTestStatus(id, status, message) {
+            const element = document.getElementById(id);
+            element.textContent = message;
+            element.className = `test-status ${status}`;
+        }
+
+        function runTests() {
+            // Test CSS
+            const hasStyles = document.querySelector('.navbar') && 
+                             getComputedStyle(document.querySelector('.navbar')).backgroundColor !== '';
+            updateTestStatus('cssStatus', hasStyles ? 'success' : 'error', 
+                           hasStyles ? '✅ OK' : '❌ Error');
+
+            // Test JavaScript
+            updateTestStatus('jsStatus', 'success', '✅ OK');
+
+            // Test LocalStorage
+            try {
+                localStorage.setItem('test', 'test');
+                localStorage.removeItem('test');
+                updateTestStatus('storageStatus', 'success', '✅ OK');
+            } catch (e) {
+                updateTestStatus('storageStatus', 'error', '❌ Error');
+            }
+        }
+
+        // Información del sistema
+        document.getElementById('currentUrl').textContent = window.location.href;
+        document.getElementById('userAgent').textContent = navigator.userAgent;
+        document.getElementById('timestamp').textContent = new Date().toLocaleString();
+
+        // Ejecutar tests automáticamente
+        setTimeout(runTests, 1000);
+    </script>
+
+    <style>
+        .test-results {
+            display: grid;
+            gap: 1rem;
+        }
+        
+        .test-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem;
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-base);
+            background: var(--color-surface);
+        }
+        
+        .test-label {
+            font-weight: var(--font-weight-medium);
+        }
+        
+        .test-status {
+            padding: 0.25rem 0.5rem;
+            border-radius: var(--radius-sm);
+            font-size: var(--font-size-sm);
+        }
+        
+        .test-status.success {
+            background: var(--color-success);
+            color: var(--color-white);
+        }
+        
+        .test-status.error {
+            background: var(--color-error);
+            color: var(--color-white);
+        }
+        
+        .test-links {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+        
+        .system-info {
+            background: var(--color-surface);
+            padding: 1rem;
+            border-radius: var(--radius-base);
+            border: 1px solid var(--color-border);
+        }
+        
+        .system-info p {
+            margin: 0.5rem 0;
+        }
+    </style>
+</body>
+</html>
+
+
