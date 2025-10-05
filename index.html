@@ -172,7 +172,7 @@
     });
 
     document.addEventListener('DOMContentLoaded', () => {
-        const APP_VERSION = 'v2.6'; // Updated version
+        const APP_VERSION = 'v2.7'; // Updated version
         const CACHE_NAME = `ar-color-cache-${APP_VERSION}`;
         document.getElementById('app-version').textContent = APP_VERSION;
 
@@ -205,25 +205,29 @@
             };
         }
 
-        // IMPROVED: This function now handles caching errors gracefully.
+        // SOLUCIÓN: Se modifica fetchWithCache para ser más robusto ante errores de red y CORS.
         async function fetchWithCache(url, cache) {
             const cachedResponse = await cache.match(url);
             if (cachedResponse) return cachedResponse;
+            
+            try {
+                // Se añade una cabecera para solicitar que no se use la caché del navegador para esta petición,
+                // lo que puede ayudar a evitar problemas de CORS.
+                const networkResponse = await fetch(url, { cache: 'no-cache' });
 
-            const networkResponse = await fetch(url);
-            
-            if (networkResponse.ok) {
-                try {
-                    // Clone the response because its body can only be used once.
-                    await cache.put(url, networkResponse.clone());
-                } catch (e) {
-                    // Log a warning if caching fails, but don't stop the application.
-                    console.warn(`No se pudo guardar el recurso en caché: ${url}`, e);
+                if (networkResponse.ok) {
+                    try {
+                        await cache.put(url, networkResponse.clone());
+                    } catch (e) {
+                        console.warn(`No se pudo guardar el recurso en caché: ${url}`, e);
+                    }
                 }
+                return networkResponse;
+            } catch (e) {
+                // Si fetch falla, se lanza el error para que sea manejado por loadAndCacheAssets.
+                console.error(`Fallo en la petición fetch para: ${url}`, e);
+                throw e; 
             }
-            
-            // Return the original response from the network.
-            return networkResponse;
         }
 
         async function clearCacheAndReload() {
@@ -279,8 +283,6 @@
                 for (const [key, url] of filesToLoad) {
                     loadingText.textContent = `Descargando ${key}...`;
                     const res = await fetchWithCache(url, cache);
-                    // This error will now only trigger if the file is truly not found (404)
-                    // or if there's a server/network error, not a caching error.
                     if (!res.ok) throw new Error(`Fallo al descargar ${key} (Status: ${res.status})`);
                     const blob = await res.blob();
                     tempAssets[key] = URL.createObjectURL(blob);
@@ -296,7 +298,8 @@
                 setTimeout(() => navigateTo('ar'), 1000);
 
             } catch (error) {
-                loadingText.innerHTML = `<span class="text-red-500 font-semibold">Error: ${error.message}</span>`;
+                // El mensaje de error ahora reflejará el fallo de fetch.
+                loadingText.innerHTML = `<span class="text-red-500 font-semibold">Error al descargar: ${error.message}. Revisa la conexión o intenta más tarde.</span>`;
                 progressBar.style.width = '100%';
                 progressBar.classList.add('bg-red-500');
                 loadButton.disabled = false;
@@ -392,7 +395,6 @@
     </script>
 </body>
 </html>
-
 
 
 
