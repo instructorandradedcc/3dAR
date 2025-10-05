@@ -42,7 +42,10 @@
         <div class="flex justify-center items-center mb-6">
              <img src="https://raw.githubusercontent.com/instructorandradedcc/propuesta-AR/main/logofundacion.jpg" alt="Logo" class="h-20 w-auto mr-4" onerror="this.onerror=null;this.src='https://placehold.co/120x80/e2e8f0/94a3b8?text=Logo';">
              <div>
-                 <h1 class="text-3xl md:text-4xl font-bold text-center" style="color: #1e3a8a;">Libro para Colorear con Realidad Aumentada</h1>
+                 <h1 class="text-3xl md:text-4xl font-bold text-center" style="color: #1e3a8a;">
+                    Libro para Colorear con Realidad Aumentada
+                    <span id="app-version" class="text-base align-middle font-normal text-gray-400 ml-2"></span>
+                </h1>
                  <p class="text-center text-gray-500">Colorea el dibujo y mira cómo cobra vida.</p>
              </div>
         </div>
@@ -114,14 +117,8 @@
         },
         tick: function() {
             const mindarSystem = this.el.sceneEl.systems['mindar-image-system'];
-            // Check if the mindarSystem and its controller are ready
             if (this.video && this.textureContext && mindarSystem && mindarSystem.controller && this.el.object3D.visible) {
-                
-                // =====================================================================
-                // CORRECCIÓN DEL ERROR: Usamos mindarSystem.controller para llamar a la función
-                // =====================================================================
                 const markerCorners = mindarSystem.controller.getMarkerWorldPosition(0);
-
                 if (markerCorners) {
                     this.textureContext.clearRect(0, 0, this.textureCanvas.width, this.textureCanvas.height);
                     const screenCoords = markerCorners.map(corner => {
@@ -164,15 +161,19 @@
     });
 
     document.addEventListener('DOMContentLoaded', () => {
+        // =====================================================================
+        // NOTA PARA DESARROLLO:
+        // Incrementar esta versión consecutivamente con cada corrección o cambio funcional.
+        // =====================================================================
+        const APP_VERSION = 'v1.0';
+        document.getElementById('app-version').textContent = APP_VERSION;
+
         const state = { isArActive: false };
         const arStatusText = document.getElementById('ar-status-text');
         const statusLoader = document.getElementById('status-loader');
         const startButton = document.getElementById('start-ar-btn');
         const GITHUB_BASE_URL = 'https://raw.githubusercontent.com/instructorandradedcc/propuesta-AR/main/asetss/';
 
-        // =====================================================================
-        // URLs ACTUALIZADAS: Ahora usamos el modelo de la cabeza
-        // =====================================================================
         const markerImageUrl = `${GITHUB_BASE_URL}imagenes/cabeza1.png`;
         const markerUrl = `${GITHUB_BASE_URL}markers/mano-iz-protesis.mind`;
         const modelUrl = `${GITHUB_BASE_URL}modelss/cabeza1.glb`;
