@@ -19,14 +19,11 @@
         }
     </script>
     <style>
-        /* Estilos generales y para el modo AR (sin cambios significativos) */
         html.ar-active, body.ar-active { overflow: hidden; width: 100%; height: 100%; margin: 0; padding: 0; }
         #app { transition: all 0.3s ease-in-out; }
         .app-container.ar-fullscreen { position: fixed; top: 0; left: 0; right: 0; bottom: 0; width: 100%; height: 100%; max-height: none; padding: 0; margin: 0 !important; border-radius: 0; overflow: hidden; }
-        .app-container.ar-fullscreen .page.active { height: 100%; }
         .page { display: none; }
         .page.active { display: block; }
-        #editor-canvas { width: 100%; height: 400px; border: 1px solid #ccc; background: #f0f0f0; cursor: move; touch-action: none; border-radius: 8px; }
         #ar-scene-container.ar-active { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 9990; }
         #ar-scene-container.ar-active a-scene { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
         #ar-scene-container.ar-active video, 
@@ -43,10 +40,10 @@
     
     <div id="app" class="app-container container mx-auto p-6 md:p-8 max-w-5xl bg-white rounded-xl shadow-lg my-8 overflow-y-auto" style="max-height: 85vh;">
         <div class="flex justify-center items-center mb-6">
-             <img src="https://placehold.co/120x80/e2e8f0/94a3b8?text=Logo" alt="Logo" class="h-20 w-auto mr-4">
+             <img src="https://raw.githubusercontent.com/instructorandradedcc/propuesta-AR/main/logofundacion.jpg" alt="Logo" class="h-20 w-auto mr-4" onerror="this.onerror=null;this.src='https://placehold.co/120x80/e2e8f0/94a3b8?text=Logo';">
              <div>
                  <h1 class="text-3xl md:text-4xl font-bold text-center" style="color: #1e3a8a;">Libro para Colorear con Realidad Aumentada</h1>
-                 <p class="text-center text-gray-500">Paso 1: ¡Apunta la cámara a tu dibujo!</p>
+                 <p class="text-center text-gray-500">Colorea el dibujo y mira cómo cobra vida.</p>
              </div>
         </div>
 
@@ -54,16 +51,23 @@
         <div id="page-ar" class="page active">
              <div class="relative">
                  <div id="ar-ui-container" class="relative z-10">
-                     <h2 class="text-2xl font-semibold mb-4 text-center">Vista de Realidad Aumentada</h2>
+                    <h2 class="text-2xl font-semibold mb-2 text-center">Paso 1: Prepara tu dibujo</h2>
+                    <p class="text-center text-gray-600 mb-4">Usa esta imagen para colorear. Luego, presiona "Iniciar AR".</p>
+                    
+                    <!-- Contenedor para la imagen del marcador -->
+                    <div id="marker-preview-container" class="mb-4 bg-gray-100 p-4 rounded-lg flex justify-center items-center min-h-[200px]">
+                        <img id="marker-image" class="max-w-full max-h-64 h-auto rounded shadow-md hidden" alt="Imagen del marcador para colorear">
+                        <div id="marker-loader" class="loader"></div>
+                    </div>
+
                      <div class="bg-white p-4 rounded-lg shadow-md mb-4">
-                         <p class="text-center">Apunta tu cámara a la página del libro para colorear. Los colores que pintes aparecerán en el modelo 3D. <strong>Puedes girar el modelo 3D deslizando el dedo.</strong></p>
                          <div id="ar-status" class="text-center font-mono p-2 bg-gray-100 rounded mt-2 flex justify-center items-center gap-2">
-                             <div class="loader hidden"></div>
-                             <span id="ar-status-text">Estado: Esperando para iniciar...</span>
+                             <div id="status-loader" class="loader hidden"></div>
+                             <span id="ar-status-text">Cargando imagen del marcador...</span>
                          </div>
                      </div>                                         
                      <div class="mt-6 flex justify-center items-center gap-4">
-                         <button id="start-ar-btn" class="bg-green-500 text-white font-bold py-3 px-6 rounded-lg hover:bg-green-600 transition duration-300 text-lg shadow-md flex items-center justify-center gap-2">
+                         <button id="start-ar-btn" disabled class="bg-green-500 text-white font-bold py-3 px-6 rounded-lg hover:bg-green-600 transition duration-300 text-lg shadow-md flex items-center justify-center gap-2 disabled:bg-gray-400 disabled:cursor-not-allowed">
                              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"></path><circle cx="12" cy="13" r="3"></circle></svg>
                              Iniciar AR
                          </button>
@@ -90,10 +94,6 @@
     <script type="module">
     import * as THREE from 'three';
     
-    // =================================================================================
-    // COMPONENTE A-FRAME: texture-from-video
-    // (Sin cambios en este componente)
-    // =================================================================================
     AFRAME.registerComponent('texture-from-video', {
         schema: {},
         init: function () {
@@ -146,10 +146,6 @@
         }
     });
 
-    // =================================================================================
-    // COMPONENTE A-FRAME: ar-rotator
-    // (Sin cambios en este componente)
-    // =================================================================================
     AFRAME.registerComponent('ar-rotator', {
         schema: { rotationFactor: { type: 'number', default: 1 } },
         init: function () {
@@ -165,24 +161,69 @@
     document.addEventListener('DOMContentLoaded', () => {
         const state = { isArActive: false };
         const arStatusText = document.getElementById('ar-status-text');
-        const arStatusLoader = document.querySelector('#ar-status .loader');
+        const statusLoader = document.getElementById('status-loader');
         const startButton = document.getElementById('start-ar-btn');
+        const GITHUB_BASE_URL = 'https://raw.githubusercontent.com/instructorandradedcc/propuesta-AR/main/asetss/';
+
+        // =====================================================================
+        // URLs de los recursos que vamos a usar
+        // =====================================================================
+        const markerImageUrl = `${GITHUB_BASE_URL}imagenes/dedo.png`;
+        const markerUrl = `${GITHUB_BASE_URL}markers/cabeza1.mind`;
+        const modelUrl = `${GITHUB_BASE_URL}modelss/dedo.glb`;
+
+        // =====================================================================
+        // NUEVA LÓGICA DE PRE-CARGA Y VERIFICACIÓN
+        // =====================================================================
+        async function initializeApp() {
+            const markerImageElement = document.getElementById('marker-image');
+            const markerLoader = document.getElementById('marker-loader');
+
+            // 1. Cargar la imagen de previsualización
+            markerImageElement.onload = () => {
+                markerImageElement.classList.remove('hidden');
+                markerLoader.classList.add('hidden');
+                arStatusText.textContent = 'Cargando modelo 3D y marcador...';
+                statusLoader.classList.remove('hidden');
+                preloadAssets();
+            };
+            markerImageElement.onerror = () => {
+                markerLoader.classList.add('hidden');
+                arStatusText.innerHTML = '<span class="text-red-500 font-semibold">Error al cargar la imagen de muestra.</span>';
+            };
+            markerImageElement.src = markerImageUrl;
+
+            // 2. Pre-cargar los assets principales (modelo y marcador)
+            async function preloadAssets() {
+                try {
+                    const [modelResponse, markerResponse] = await Promise.all([
+                        fetch(modelUrl),
+                        fetch(markerUrl)
+                    ]);
+
+                    if (!modelResponse.ok) throw new Error(`No se pudo cargar el modelo 3D (${modelResponse.status})`);
+                    if (!markerResponse.ok) throw new Error(`No se pudo cargar el marcador (.mind) (${markerResponse.status})`);
+
+                    arStatusText.textContent = '¡Recursos listos! Ya puedes iniciar la AR.';
+                    statusLoader.classList.add('hidden');
+                    startButton.disabled = false;
+
+                } catch (error) {
+                    arStatusText.innerHTML = `<span class="text-red-500 font-semibold">Error: ${error.message}</span>`;
+                    statusLoader.classList.add('hidden');
+                }
+            }
+        }
 
         function setupAndStartAR() {
             startButton.disabled = true;
-            arStatusLoader.classList.remove('hidden');
-            arStatusText.textContent = 'Iniciando AR...';
-
-            document.getElementById('preloader-text').textContent = "Cargando recursos...";
             document.getElementById('ar-preloader').classList.remove('hidden');
             const arSceneContainer = document.getElementById('ar-scene-container');
             arSceneContainer.innerHTML = ''; 
 
-            const markerUrl = 'https://raw.githubusercontent.com/instructorandradedcc/propuesta-AR/main/asetss/markers/cabeza1.mind';
-            const modelUrl = 'https://raw.githubusercontent.com/instructorandradedcc/propuesta-AR/main/asetss/modelss/dedo.glb';
-
+            // Corregimos el atributo mindar-image para evitar el error
             const sceneHTML = `
-                <a-scene id="ar-scene" embedded vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false" mindar-image="imageTargetSrc: ${markerUrl}; autoStart: false;" color-space="sRGB" renderer="colorManagement: true, physicallyCorrectLights">
+                <a-scene id="ar-scene" embedded vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false" mindar-image="imageTargetSrc: ${markerUrl}; autoStart: true; uiLoading: no; uiError: no; uiScanning: no;" color-space="sRGB" renderer="colorManagement: true, physicallyCorrectLights">
                     <a-assets> <a-asset-item id="coloring-model" src="${modelUrl}"></a-asset-item> </a-assets>
                     <a-camera position="0 0 0" look-controls="enabled: false" fov="75"></a-camera>
                     <a-entity mindar-image-target="targetIndex: 0">
@@ -192,37 +233,8 @@
             arSceneContainer.innerHTML = sceneHTML;
 
             const sceneEl = document.getElementById('ar-scene');
-            const modelAsset = document.getElementById('coloring-model');
-
-            // =====================================================================
-            // NUEVA LÓGICA DE GESTIÓN DE ERRORES
-            // =====================================================================
-            let markerLoadTimeout;
-
-            modelAsset.addEventListener('loaded', () => {
-                arStatusText.textContent = 'Modelo 3D cargado. Iniciando cámara...';
-                document.getElementById('preloader-text').textContent = "Iniciando cámara...";
-
-                // Ahora que el modelo cargó, iniciamos la escena de MindAR
-                sceneEl.systems['mindar-image-system'].start();
-
-                markerLoadTimeout = setTimeout(() => {
-                    arStatusText.innerHTML = '<span class="text-red-500 font-semibold">Error: El marcador (.mind) no cargó a tiempo.</span>';
-                    arStatusLoader.classList.add('hidden');
-                    startButton.disabled = false;
-                    document.getElementById('ar-preloader').classList.add('hidden');
-                }, 15000);
-            });
-
-            modelAsset.addEventListener('error', () => {
-                arStatusText.innerHTML = '<span class="text-red-500 font-semibold">Error al cargar el modelo 3D (.glb).</span>';
-                arStatusLoader.classList.add('hidden');
-                startButton.disabled = false;
-                document.getElementById('ar-preloader').classList.add('hidden');
-            });
             
             sceneEl.addEventListener('arReady', () => {
-                clearTimeout(markerLoadTimeout); // El marcador cargó correctamente
                 document.getElementById('ar-preloader').classList.add('hidden');
                 const appContainer = document.getElementById('app');
                 document.documentElement.classList.add('ar-active');
@@ -257,14 +269,17 @@
             document.getElementById('scanning-ui').classList.add('hidden');                        
             state.isArActive = false;
             startButton.disabled = false;
-            arStatusLoader.classList.add('hidden');
-            arStatusText.textContent = 'Estado: Esperando para iniciar...';
+            arStatusText.textContent = '¡Recursos listos! Ya puedes iniciar la AR.';
         }                
 
         startButton.addEventListener('click', setupAndStartAR);
         document.getElementById('stop-ar-btn').addEventListener('click', stopAR);
+
+        // Iniciar el proceso de carga al entrar en la página
+        initializeApp();
     });
     </script>
 </body>
 </html>
+
 
