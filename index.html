@@ -61,10 +61,16 @@
                 <button id="load-assets-btn" class="bg-green-500 text-white font-bold py-3 px-6 rounded-lg hover:bg-green-600 transition duration-300 text-lg shadow-md w-full sm:w-auto flex justify-center items-center">
                     Cargar Recursos
                 </button>
+                <button id="clear-cache-btn" class="bg-red-500 text-white font-bold py-3 px-6 rounded-lg hover:bg-red-600 transition duration-300 text-lg shadow-md w-full sm:w-auto flex justify-center items-center">
+                    Limpiar Caché
+                </button>
             </div>
             <div id="loading-status" class="mt-6 hidden">
                 <div class="flex justify-center items-center"><div class="loader"></div></div>
                 <p id="loading-text" class="text-center text-gray-600 mt-2">Iniciando...</p>
+                <div class="w-full bg-gray-200 rounded-full h-2.5 mt-2">
+                    <div id="loading-progress-bar" class="bg-blue-600 h-2.5 rounded-full" style="width: 0%"></div>
+                </div>
             </div>
         </div>
 
@@ -107,7 +113,6 @@
         schema: {},
         init: function () {
             this.sceneEl = this.el.sceneEl; this.model = null; this.textureCanvas = null; this.textureContext = null; this.texture = null; this.video = null; this.logged = false;
-            // CORRECCIÓN: Se corrigió el error tipográfico de getObjectD a getObject3D
             this.el.addEventListener('model-loaded', () => { this.model = this.el.getObject3D('mesh'); this.setupTexture(); });
             this.sceneEl.addEventListener('arReady', () => { this.video = document.querySelector('video'); });
         },
@@ -167,18 +172,19 @@
     });
 
     document.addEventListener('DOMContentLoaded', () => {
-        const APP_VERSION = 'v2.1';
-        const CACHE_NAME = `ar-color-cache-${APP_VERSION}`;
+        const APP_VERSION = 'v2.2';
+        const CACHE_NAME = `ar-color-cache-v${APP_VERSION}`;
         document.getElementById('app-version').textContent = APP_VERSION;
 
         const state = { isArActive: false, assets: {} };
-
         const GITHUB_BASE_URL = 'https://raw.githubusercontent.com/instructorandradedcc/propuesta-AR/main/asetss/';
-        const ASSET_URLS = {
-            image: `${GITHUB_BASE_URL}imagenes/cabeza1.png`,
-            marker: `${GITHUB_BASE_URL}markers/mano-iz-protesis.mind`,
-            model: `${GITHUB_BASE_URL}modelss/cabeza1.glb`
-        };
+
+        const ASSET_MAPPING = [{
+            name: 'cabeza1',
+            markerFile: 'mano-iz-protesis.mind',
+            modelFile: 'cabeza1.glb',
+            imageFile: 'cabeza1.png'
+        }];
 
         const pages = {
             loader: document.getElementById('page-loader'),
@@ -190,46 +196,93 @@
             if(pages[pageId]) pages[pageId].classList.add('active');
         }
 
-        async function fetchAndCache(url, cache) {
+        async function fetchWithCache(url, cache) {
             const cachedResponse = await cache.match(url);
             if (cachedResponse) return cachedResponse;
-            // CORRECCIÓN: Se agrega { mode: 'cors' } para evitar errores de red al guardar en caché
-            const networkResponse = await fetch(url, { mode: 'cors' });
+            const networkResponse = await fetch(url);
             if (networkResponse.ok) {
                 await cache.put(url, networkResponse.clone());
             }
             return networkResponse;
         }
 
+        async function clearCacheAndReload() {
+            const loadButton = document.getElementById('load-assets-btn');
+            const clearButton = document.getElementById('clear-cache-btn');
+            const loadingText = document.getElementById('loading-text');
+            const loadingStatusDiv = document.getElementById('loading-status');
+
+            loadingStatusDiv.classList.remove('hidden');
+            loadingText.textContent = 'Limpiando caché...';
+            loadButton.disabled = true;
+            clearButton.disabled = true;
+            
+            try {
+                const keys = await caches.keys();
+                await Promise.all(keys.map(key => {
+                    if (key.startsWith('ar-color-cache')) {
+                        return caches.delete(key);
+                    }
+                    return Promise.resolve();
+                }));
+
+                loadingText.innerHTML = '<span class="text-green-600">Caché limpiada. La página se recargará.</span>';
+                
+                setTimeout(() => window.location.reload(), 1500);
+
+            } catch (error) {
+                loadingText.innerHTML = `<span class="text-red-600">Error al limpiar la caché: ${error.message}</span>`;
+                loadButton.disabled = false;
+                clearButton.disabled = false;
+            }
+        }
+
         async function loadAndCacheAssets() {
             const loadingStatusDiv = document.getElementById('loading-status');
             const loadingText = document.getElementById('loading-text');
+            const progressBar = document.getElementById('loading-progress-bar');
             const loadButton = document.getElementById('load-assets-btn');
             
             loadingStatusDiv.classList.remove('hidden');
             loadButton.disabled = true;
+            progressBar.style.width = '0%';
+            progressBar.classList.remove('bg-red-500');
 
             try {
                 const cache = await caches.open(CACHE_NAME);
-                const assetKeys = Object.keys(ASSET_URLS);
+                const asset = ASSET_MAPPING[0];
                 
-                const promises = assetKeys.map(async (key) => {
-                    loadingText.textContent = `Descargando ${key}...`;
-                    const res = await fetchAndCache(ASSET_URLS[key], cache);
-                    if (!res.ok) throw new Error(`Failed to fetch ${key}`);
-                    const blob = await res.blob();
-                    state.assets[key] = URL.createObjectURL(blob);
-                });
+                const urls = {
+                    image: `${GITHUB_BASE_URL}imagenes/${asset.imageFile}`,
+                    marker: `${GITHUB_BASE_URL}markers/${asset.markerFile}`,
+                    model: `${GITHUB_BASE_URL}modelss/${asset.modelFile}`
+                };
 
-                await Promise.all(promises);
+                let loadedCount = 0;
+                const totalAssets = Object.keys(urls).length;
+
+                const assetPromises = Object.entries(urls).map(async ([key, url]) => {
+                    loadingText.textContent = `Descargando ${key}...`;
+                    const res = await fetchWithCache(url, cache);
+                     if (!res.ok) throw new Error(`Fallo al descargar ${key}`);
+                    loadedCount++;
+                    progressBar.style.width = `${(loadedCount / totalAssets) * 100}%`;
+                    const blob = await res.blob();
+                    return [key, URL.createObjectURL(blob)];
+                });
                 
+                const assetEntries = await Promise.all(assetPromises);
+                state.assets = Object.fromEntries(assetEntries);
+
                 loadingText.textContent = '¡Recursos cargados!';
                 document.getElementById('marker-image').src = state.assets.image;
                 document.getElementById('marker-image').classList.remove('hidden');
                 setTimeout(() => navigateTo('ar'), 1000);
 
             } catch (error) {
-                loadingText.textContent = `Error: ${error.message}`;
+                loadingText.innerHTML = `<span class="text-red-500 font-semibold">Error: ${error.message}</span>`;
+                progressBar.style.width = '100%';
+                progressBar.classList.add('bg-red-500');
                 loadButton.disabled = false;
             }
         }
@@ -237,12 +290,22 @@
         async function initializeApp() {
             try {
                 const cache = await caches.open(CACHE_NAME);
-                const keys = Object.keys(ASSET_URLS);
-                const responses = await Promise.all(keys.map(key => cache.match(ASSET_URLS[key])));
+                const asset = ASSET_MAPPING[0];
+                const urls = {
+                    image: `${GITHUB_BASE_URL}imagenes/${asset.imageFile}`,
+                    marker: `${GITHUB_BASE_URL}markers/${asset.markerFile}`,
+                    model: `${GITHUB_BASE_URL}modelss/${asset.modelFile}`
+                };
+                
+                const responses = await Promise.all(Object.values(urls).map(url => cache.match(url)));
 
                 if (responses.every(res => res && res.ok)) {
                     const blobs = await Promise.all(responses.map(res => res.blob()));
-                    keys.forEach((key, i) => { state.assets[key] = URL.createObjectURL(blobs[i]); });
+                    state.assets = {
+                        image: URL.createObjectURL(blobs[0]),
+                        marker: URL.createObjectURL(blobs[1]),
+                        model: URL.createObjectURL(blobs[2])
+                    };
                     
                     document.getElementById('loader-welcome-text').textContent = 'Recursos encontrados en caché. ¡Listo para empezar!';
                     document.getElementById('marker-image').src = state.assets.image;
@@ -309,6 +372,7 @@
         }                
 
         document.getElementById('load-assets-btn').addEventListener('click', loadAndCacheAssets);
+        document.getElementById('clear-cache-btn').addEventListener('click', clearCacheAndReload);
         document.getElementById('start-ar-btn').addEventListener('click', setupAndStartAR);
         document.getElementById('stop-ar-btn').addEventListener('click', stopAR);
 
@@ -317,6 +381,7 @@
     </script>
 </body>
 </html>
+
 
 
 
