@@ -172,7 +172,7 @@
     });
 
     document.addEventListener('DOMContentLoaded', () => {
-        const APP_VERSION = 'v2.2';
+        const APP_VERSION = 'v2.3';
         const CACHE_NAME = `ar-color-cache-v${APP_VERSION}`;
         document.getElementById('app-version').textContent = APP_VERSION;
 
@@ -258,21 +258,22 @@
                     model: `${GITHUB_BASE_URL}modelss/${asset.modelFile}`
                 };
 
+                const filesToLoad = Object.entries(urls);
                 let loadedCount = 0;
-                const totalAssets = Object.keys(urls).length;
+                const tempAssets = {};
 
-                const assetPromises = Object.entries(urls).map(async ([key, url]) => {
+                // SOLUCIÓN: Carga secuencial de archivos
+                for (const [key, url] of filesToLoad) {
                     loadingText.textContent = `Descargando ${key}...`;
                     const res = await fetchWithCache(url, cache);
-                     if (!res.ok) throw new Error(`Fallo al descargar ${key}`);
-                    loadedCount++;
-                    progressBar.style.width = `${(loadedCount / totalAssets) * 100}%`;
+                    if (!res.ok) throw new Error(`Fallo al descargar ${key} desde ${url}`);
                     const blob = await res.blob();
-                    return [key, URL.createObjectURL(blob)];
-                });
+                    tempAssets[key] = URL.createObjectURL(blob);
+                    loadedCount++;
+                    progressBar.style.width = `${(loadedCount / filesToLoad.length) * 100}%`;
+                }
                 
-                const assetEntries = await Promise.all(assetPromises);
-                state.assets = Object.fromEntries(assetEntries);
+                state.assets = tempAssets;
 
                 loadingText.textContent = '¡Recursos cargados!';
                 document.getElementById('marker-image').src = state.assets.image;
@@ -381,7 +382,6 @@
     </script>
 </body>
 </html>
-
 
 
 
