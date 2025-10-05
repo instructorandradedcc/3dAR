@@ -43,9 +43,9 @@
              <img src="https://raw.githubusercontent.com/instructorandradedcc/propuesta-AR/main/logofundacion.jpg" alt="Logo" class="h-20 w-auto mr-4" onerror="this.onerror=null;this.src='https://placehold.co/120x80/e2e8f0/94a3b8?text=Logo';">
              <div>
                  <h1 class="text-3xl md:text-4xl font-bold text-center" style="color: #1e3a8a;">
-                    Libro para Colorear con Realidad Aumentada
-                    <span id="app-version" class="text-base align-middle font-normal text-gray-400 ml-2"></span>
-                </h1>
+                     Libro para Colorear con Realidad Aumentada
+                     <span id="app-version" class="text-base align-middle font-normal text-gray-400 ml-2"></span>
+                 </h1>
                  <p class="text-center text-gray-500">Colorea el dibujo y mira cómo cobra vida.</p>
              </div>
         </div>
@@ -56,7 +56,7 @@
             <div class="bg-indigo-50 border-l-4 border-indigo-500 text-indigo-700 p-4 mb-6" role="alert">
                 <p class="font-bold">¡Bienvenido!</p>
                 <p id="loader-welcome-text">Presiona el botón para descargar los recursos. Los archivos se guardarán en la caché de tu navegador para acelerar futuras cargas.</p>
-            </div>                        
+            </div>                               
             <div class="mt-6 flex flex-col sm:flex-row justify-center items-center gap-4">
                 <button id="load-assets-btn" class="bg-green-500 text-white font-bold py-3 px-6 rounded-lg hover:bg-green-600 transition duration-300 text-lg shadow-md w-full sm:w-auto flex justify-center items-center">
                     Cargar Recursos
@@ -78,24 +78,24 @@
         <div id="page-ar" class="page">
              <div class="relative">
                  <div id="ar-ui-container" class="relative z-10">
-                    <h2 class="text-2xl font-semibold mb-2 text-center">Paso 2: Prepara tu dibujo</h2>
-                    <p class="text-center text-gray-600 mb-4">Usa esta imagen para colorear. Luego, presiona "Iniciar AR".</p>
-                    <div id="marker-preview-container" class="mb-4 bg-gray-100 p-4 rounded-lg flex justify-center items-center min-h-[200px]">
-                        <img id="marker-image" class="max-w-full max-h-64 h-auto rounded shadow-md hidden" alt="Imagen del marcador para colorear">
-                    </div>
-                     <div class="mt-6 flex justify-center items-center gap-4">
-                         <button id="start-ar-btn" class="bg-green-500 text-white font-bold py-3 px-6 rounded-lg hover:bg-green-600 transition duration-300 text-lg shadow-md flex items-center justify-center gap-2">
-                             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"></path><circle cx="12" cy="13" r="3"></circle></svg>
-                             Iniciar AR
-                         </button>
+                     <h2 class="text-2xl font-semibold mb-2 text-center">Paso 2: Prepara tu dibujo</h2>
+                     <p class="text-center text-gray-600 mb-4">Usa esta imagen para colorear. Luego, presiona "Iniciar AR".</p>
+                     <div id="marker-preview-container" class="mb-4 bg-gray-100 p-4 rounded-lg flex justify-center items-center min-h-[200px]">
+                         <img id="marker-image" class="max-w-full max-h-64 h-auto rounded shadow-md hidden" alt="Imagen del marcador para colorear">
                      </div>
+                      <div class="mt-6 flex justify-center items-center gap-4">
+                          <button id="start-ar-btn" class="bg-green-500 text-white font-bold py-3 px-6 rounded-lg hover:bg-green-600 transition duration-300 text-lg shadow-md flex items-center justify-center gap-2">
+                              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"></path><circle cx="12" cy="13" r="3"></circle></svg>
+                              Iniciar AR
+                          </button>
+                      </div>
                  </div>
                  <div id="ar-scene-container"></div>
                  <div id="scanning-ui" class="hidden"><p class="scan-text">Apunte al marcador de la página</p></div>
                  <div id="ar-active-controls" class="hidden p-4 bg-black bg-opacity-50">
-                     <div class="relative flex justify-center items-center gap-4 max-w-4xl mx-auto">
-                         <button id="stop-ar-btn" class="bg-red-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-red-600 transition duration-300">Detener Cámara</button>
-                     </div>
+                      <div class="relative flex justify-center items-center gap-4 max-w-4xl mx-auto">
+                          <button id="stop-ar-btn" class="bg-red-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-red-600 transition duration-300">Detener Cámara</button>
+                      </div>
                  </div>
              </div>
         </div>
@@ -172,12 +172,13 @@
     });
 
     document.addEventListener('DOMContentLoaded', () => {
-        const APP_VERSION = 'v2.3';
-        const CACHE_NAME = `ar-color-cache-v${APP_VERSION}`;
+        const APP_VERSION = 'v2.4'; // Updated version
+        const CACHE_NAME = `ar-color-cache-${APP_VERSION}`;
         document.getElementById('app-version').textContent = APP_VERSION;
 
         const state = { isArActive: false, assets: {} };
-        const GITHUB_BASE_URL = 'https://raw.githubusercontent.com/instructorandradedcc/propuesta-AR/main/asetss/';
+        // CORRECTED: Base URL was misspelled ('asetss' -> 'assets')
+        const GITHUB_BASE_URL = 'https://raw.githubusercontent.com/instructorandradedcc/propuesta-AR/main/assets/';
 
         const ASSET_MAPPING = [{
             name: 'cabeza1',
@@ -194,6 +195,17 @@
         function navigateTo(pageId) {
             Object.values(pages).forEach(p => p.classList.remove('active'));
             if(pages[pageId]) pages[pageId].classList.add('active');
+        }
+        
+        // IMPROVEMENT: Centralized function to get asset URLs to avoid repetition and errors.
+        function getAssetUrls() {
+            const asset = ASSET_MAPPING[0];
+            return {
+                image: `${GITHUB_BASE_URL}images/${asset.imageFile}`,
+                marker: `${GITHUB_BASE_URL}markers/${asset.markerFile}`,
+                // CORRECTED: Sub-folder was misspelled ('modelss' -> 'models')
+                model: `${GITHUB_BASE_URL}models/${asset.modelFile}`
+            };
         }
 
         async function fetchWithCache(url, cache) {
@@ -250,23 +262,16 @@
 
             try {
                 const cache = await caches.open(CACHE_NAME);
-                const asset = ASSET_MAPPING[0];
-                
-                const urls = {
-                    image: `${GITHUB_BASE_URL}imagenes/${asset.imageFile}`,
-                    marker: `${GITHUB_BASE_URL}markers/${asset.markerFile}`,
-                    model: `${GITHUB_BASE_URL}modelss/${asset.modelFile}`
-                };
+                const urls = getAssetUrls(); // Use the helper function
 
                 const filesToLoad = Object.entries(urls);
                 let loadedCount = 0;
                 const tempAssets = {};
 
-                // SOLUCIÓN: Carga secuencial de archivos
                 for (const [key, url] of filesToLoad) {
                     loadingText.textContent = `Descargando ${key}...`;
                     const res = await fetchWithCache(url, cache);
-                    if (!res.ok) throw new Error(`Fallo al descargar ${key} desde ${url}`);
+                    if (!res.ok) throw new Error(`Fallo al descargar ${key} (Status: ${res.status})`);
                     const blob = await res.blob();
                     tempAssets[key] = URL.createObjectURL(blob);
                     loadedCount++;
@@ -291,12 +296,7 @@
         async function initializeApp() {
             try {
                 const cache = await caches.open(CACHE_NAME);
-                const asset = ASSET_MAPPING[0];
-                const urls = {
-                    image: `${GITHUB_BASE_URL}imagenes/${asset.imageFile}`,
-                    marker: `${GITHUB_BASE_URL}markers/${asset.markerFile}`,
-                    model: `${GITHUB_BASE_URL}modelss/${asset.modelFile}`
-                };
+                const urls = getAssetUrls(); // Use the helper function
                 
                 const responses = await Promise.all(Object.values(urls).map(url => cache.match(url)));
 
@@ -367,10 +367,10 @@
             document.getElementById('app').classList.remove('ar-fullscreen');
             document.getElementById('ar-ui-container').classList.remove('hidden');
             document.getElementById('ar-active-controls').classList.add('hidden');
-            document.getElementById('scanning-ui').classList.add('hidden');                        
+            document.getElementById('scanning-ui').classList.add('hidden');                               
             state.isArActive = false;
             document.getElementById('start-ar-btn').disabled = false;
-        }                
+        }               
 
         document.getElementById('load-assets-btn').addEventListener('click', loadAndCacheAssets);
         document.getElementById('clear-cache-btn').addEventListener('click', clearCacheAndReload);
