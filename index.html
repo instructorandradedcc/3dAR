@@ -54,7 +54,6 @@
                     <h2 class="text-2xl font-semibold mb-2 text-center">Paso 1: Prepara tu dibujo</h2>
                     <p class="text-center text-gray-600 mb-4">Usa esta imagen para colorear. Luego, presiona "Iniciar AR".</p>
                     
-                    <!-- Contenedor para la imagen del marcador -->
                     <div id="marker-preview-container" class="mb-4 bg-gray-100 p-4 rounded-lg flex justify-center items-center min-h-[200px]">
                         <img id="marker-image" class="max-w-full max-h-64 h-auto rounded shadow-md hidden" alt="Imagen del marcador para colorear">
                         <div id="marker-loader" class="loader"></div>
@@ -114,13 +113,19 @@
             });
         },
         tick: function() {
-            const mindarSystem = this.sceneEl.systems['mindar-image-system'];
-            if (this.video && this.textureContext && mindarSystem && this.el.object3D.visible) {
-                const markerCorners = mindarSystem.getMarkerWorldPosition(0);
+            const mindarSystem = this.el.sceneEl.systems['mindar-image-system'];
+            // Check if the mindarSystem and its controller are ready
+            if (this.video && this.textureContext && mindarSystem && mindarSystem.controller && this.el.object3D.visible) {
+                
+                // =====================================================================
+                // CORRECCIÓN DEL ERROR: Usamos mindarSystem.controller para llamar a la función
+                // =====================================================================
+                const markerCorners = mindarSystem.controller.getMarkerWorldPosition(0);
+
                 if (markerCorners) {
                     this.textureContext.clearRect(0, 0, this.textureCanvas.width, this.textureCanvas.height);
                     const screenCoords = markerCorners.map(corner => {
-                        const vector = new THREE.Vector3(corner.x, corner.y, corner.z).project(this.sceneEl.camera);
+                        const vector = new THREE.Vector3(corner.x, corner.y, corner.z).project(this.el.sceneEl.camera);
                         return { x: (vector.x + 1) * this.video.videoWidth / 2, y: (-vector.y + 1) * this.video.videoHeight / 2 };
                     });
                     this.drawPerspectiveCorrectedImage(screenCoords);
@@ -166,20 +171,16 @@
         const GITHUB_BASE_URL = 'https://raw.githubusercontent.com/instructorandradedcc/propuesta-AR/main/asetss/';
 
         // =====================================================================
-        // URLs de los recursos que vamos a usar
+        // URLs ACTUALIZADAS: Ahora usamos el modelo de la cabeza
         // =====================================================================
-        const markerImageUrl = `${GITHUB_BASE_URL}imagenes/dedo.png`;
-        const markerUrl = `${GITHUB_BASE_URL}markers/cabeza1.mind`;
-        const modelUrl = `${GITHUB_BASE_URL}modelss/dedo.glb`;
+        const markerImageUrl = `${GITHUB_BASE_URL}imagenes/cabeza1.png`;
+        const markerUrl = `${GITHUB_BASE_URL}markers/mano-iz-protesis.mind`;
+        const modelUrl = `${GITHUB_BASE_URL}modelss/cabeza1.glb`;
 
-        // =====================================================================
-        // NUEVA LÓGICA DE PRE-CARGA Y VERIFICACIÓN
-        // =====================================================================
         async function initializeApp() {
             const markerImageElement = document.getElementById('marker-image');
             const markerLoader = document.getElementById('marker-loader');
 
-            // 1. Cargar la imagen de previsualización
             markerImageElement.onload = () => {
                 markerImageElement.classList.remove('hidden');
                 markerLoader.classList.add('hidden');
@@ -193,7 +194,6 @@
             };
             markerImageElement.src = markerImageUrl;
 
-            // 2. Pre-cargar los assets principales (modelo y marcador)
             async function preloadAssets() {
                 try {
                     const [modelResponse, markerResponse] = await Promise.all([
@@ -221,13 +221,12 @@
             const arSceneContainer = document.getElementById('ar-scene-container');
             arSceneContainer.innerHTML = ''; 
 
-            // Corregimos el atributo mindar-image para evitar el error
             const sceneHTML = `
                 <a-scene id="ar-scene" embedded vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false" mindar-image="imageTargetSrc: ${markerUrl}; autoStart: true; uiLoading: no; uiError: no; uiScanning: no;" color-space="sRGB" renderer="colorManagement: true, physicallyCorrectLights">
                     <a-assets> <a-asset-item id="coloring-model" src="${modelUrl}"></a-asset-item> </a-assets>
                     <a-camera position="0 0 0" look-controls="enabled: false" fov="75"></a-camera>
                     <a-entity mindar-image-target="targetIndex: 0">
-                        <a-gltf-model src="#coloring-model" position="0 -0.25 0" rotation="0 0 0" scale="0.5 0.5 0.5" ar-rotator texture-from-video></a-gltf-model>
+                        <a-gltf-model src="#coloring-model" position="0 -0.4 0" rotation="0 0 0" scale="0.8 0.8 0.8" ar-rotator texture-from-video></a-gltf-model>
                     </a-entity>
                 </a-scene>`;
             arSceneContainer.innerHTML = sceneHTML;
@@ -275,7 +274,6 @@
         startButton.addEventListener('click', setupAndStartAR);
         document.getElementById('stop-ar-btn').addEventListener('click', stopAR);
 
-        // Iniciar el proceso de carga al entrar en la página
         initializeApp();
     });
     </script>
