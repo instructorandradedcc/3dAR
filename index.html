@@ -172,12 +172,13 @@
     });
 
     document.addEventListener('DOMContentLoaded', () => {
-        const APP_VERSION = 'v2.7'; // Updated version
+        const APP_VERSION = 'v2.8'; // Updated version
         const CACHE_NAME = `ar-color-cache-${APP_VERSION}`;
         document.getElementById('app-version').textContent = APP_VERSION;
 
         const state = { isArActive: false, assets: {} };
-        const GITHUB_BASE_URL = 'https://raw.githubusercontent.com/instructorandradedcc/propuesta-AR/main/asetss/';
+        // SOLUCIÓN: Cambiar la URL base a un CDN confiable (jsDelivr)
+        const GITHUB_BASE_URL = 'https://cdn.jsdelivr.net/gh/instructorandradedcc/propuesta-AR@main/asetss/';
 
         const ASSET_MAPPING = [{
             name: 'cabeza1',
@@ -205,15 +206,13 @@
             };
         }
 
-        // SOLUCIÓN: Se modifica fetchWithCache para ser más robusto ante errores de red y CORS.
         async function fetchWithCache(url, cache) {
             const cachedResponse = await cache.match(url);
             if (cachedResponse) return cachedResponse;
             
             try {
-                // Se añade una cabecera para solicitar que no se use la caché del navegador para esta petición,
-                // lo que puede ayudar a evitar problemas de CORS.
-                const networkResponse = await fetch(url, { cache: 'no-cache' });
+                // Se eliminó { cache: 'no-cache' } porque jsDelivr maneja las cabeceras correctamente.
+                const networkResponse = await fetch(url);
 
                 if (networkResponse.ok) {
                     try {
@@ -224,7 +223,6 @@
                 }
                 return networkResponse;
             } catch (e) {
-                // Si fetch falla, se lanza el error para que sea manejado por loadAndCacheAssets.
                 console.error(`Fallo en la petición fetch para: ${url}`, e);
                 throw e; 
             }
@@ -298,7 +296,6 @@
                 setTimeout(() => navigateTo('ar'), 1000);
 
             } catch (error) {
-                // El mensaje de error ahora reflejará el fallo de fetch.
                 loadingText.innerHTML = `<span class="text-red-500 font-semibold">Error al descargar: ${error.message}. Revisa la conexión o intenta más tarde.</span>`;
                 progressBar.style.width = '100%';
                 progressBar.classList.add('bg-red-500');
@@ -395,7 +392,6 @@
     </script>
 </body>
 </html>
-
 
 
 
