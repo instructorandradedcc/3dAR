@@ -107,7 +107,8 @@
         schema: {},
         init: function () {
             this.sceneEl = this.el.sceneEl; this.model = null; this.textureCanvas = null; this.textureContext = null; this.texture = null; this.video = null; this.logged = false;
-            this.el.addEventListener('model-loaded', () => { this.model = this.el.getObjectD('mesh'); this.setupTexture(); });
+            // CORRECCIÓN: Se corrigió el error tipográfico de getObjectD a getObject3D
+            this.el.addEventListener('model-loaded', () => { this.model = this.el.getObject3D('mesh'); this.setupTexture(); });
             this.sceneEl.addEventListener('arReady', () => { this.video = document.querySelector('video'); });
         },
         setupTexture: function() {
@@ -166,7 +167,7 @@
     });
 
     document.addEventListener('DOMContentLoaded', () => {
-        const APP_VERSION = 'v2.0';
+        const APP_VERSION = 'v2.1';
         const CACHE_NAME = `ar-color-cache-${APP_VERSION}`;
         document.getElementById('app-version').textContent = APP_VERSION;
 
@@ -192,7 +193,8 @@
         async function fetchAndCache(url, cache) {
             const cachedResponse = await cache.match(url);
             if (cachedResponse) return cachedResponse;
-            const networkResponse = await fetch(url);
+            // CORRECCIÓN: Se agrega { mode: 'cors' } para evitar errores de red al guardar en caché
+            const networkResponse = await fetch(url, { mode: 'cors' });
             if (networkResponse.ok) {
                 await cache.put(url, networkResponse.clone());
             }
@@ -315,7 +317,6 @@
     </script>
 </body>
 </html>
-
 
 
 
