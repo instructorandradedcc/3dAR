@@ -50,35 +50,42 @@
              </div>
         </div>
 
-        <!-- PÁGINA ÚNICA PARA LA APP DE COLOREAR -->
-        <div id="page-ar" class="page active">
+        <!-- PÁGINA 1: Carga de Recursos -->
+        <div id="page-loader" class="page active bg-white p-6 rounded-lg shadow-md">
+            <h2 class="text-2xl font-semibold mb-4 border-b pb-2">Paso 1: Cargar Recursos</h2>
+            <div class="bg-indigo-50 border-l-4 border-indigo-500 text-indigo-700 p-4 mb-6" role="alert">
+                <p class="font-bold">¡Bienvenido!</p>
+                <p id="loader-welcome-text">Presiona el botón para descargar los recursos. Los archivos se guardarán en la caché de tu navegador para acelerar futuras cargas.</p>
+            </div>                        
+            <div class="mt-6 flex flex-col sm:flex-row justify-center items-center gap-4">
+                <button id="load-assets-btn" class="bg-green-500 text-white font-bold py-3 px-6 rounded-lg hover:bg-green-600 transition duration-300 text-lg shadow-md w-full sm:w-auto flex justify-center items-center">
+                    Cargar Recursos
+                </button>
+            </div>
+            <div id="loading-status" class="mt-6 hidden">
+                <div class="flex justify-center items-center"><div class="loader"></div></div>
+                <p id="loading-text" class="text-center text-gray-600 mt-2">Iniciando...</p>
+            </div>
+        </div>
+
+        <!-- PÁGINA 2: Iniciar AR -->
+        <div id="page-ar" class="page">
              <div class="relative">
                  <div id="ar-ui-container" class="relative z-10">
-                    <h2 class="text-2xl font-semibold mb-2 text-center">Paso 1: Prepara tu dibujo</h2>
+                    <h2 class="text-2xl font-semibold mb-2 text-center">Paso 2: Prepara tu dibujo</h2>
                     <p class="text-center text-gray-600 mb-4">Usa esta imagen para colorear. Luego, presiona "Iniciar AR".</p>
-                    
                     <div id="marker-preview-container" class="mb-4 bg-gray-100 p-4 rounded-lg flex justify-center items-center min-h-[200px]">
                         <img id="marker-image" class="max-w-full max-h-64 h-auto rounded shadow-md hidden" alt="Imagen del marcador para colorear">
-                        <div id="marker-loader" class="loader"></div>
                     </div>
-
-                     <div class="bg-white p-4 rounded-lg shadow-md mb-4">
-                         <div id="ar-status" class="text-center font-mono p-2 bg-gray-100 rounded mt-2 flex justify-center items-center gap-2">
-                             <div id="status-loader" class="loader hidden"></div>
-                             <span id="ar-status-text">Cargando imagen del marcador...</span>
-                         </div>
-                     </div>                                         
                      <div class="mt-6 flex justify-center items-center gap-4">
-                         <button id="start-ar-btn" disabled class="bg-green-500 text-white font-bold py-3 px-6 rounded-lg hover:bg-green-600 transition duration-300 text-lg shadow-md flex items-center justify-center gap-2 disabled:bg-gray-400 disabled:cursor-not-allowed">
+                         <button id="start-ar-btn" class="bg-green-500 text-white font-bold py-3 px-6 rounded-lg hover:bg-green-600 transition duration-300 text-lg shadow-md flex items-center justify-center gap-2">
                              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"></path><circle cx="12" cy="13" r="3"></circle></svg>
                              Iniciar AR
                          </button>
                      </div>
                  </div>
                  <div id="ar-scene-container"></div>
-                 <div id="scanning-ui" class="hidden">
-                     <p class="scan-text">Apunte al marcador de la página</p>
-                 </div>
+                 <div id="scanning-ui" class="hidden"><p class="scan-text">Apunte al marcador de la página</p></div>
                  <div id="ar-active-controls" class="hidden p-4 bg-black bg-opacity-50">
                      <div class="relative flex justify-center items-center gap-4 max-w-4xl mx-auto">
                          <button id="stop-ar-btn" class="bg-red-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-red-600 transition duration-300">Detener Cámara</button>
@@ -99,8 +106,8 @@
     AFRAME.registerComponent('texture-from-video', {
         schema: {},
         init: function () {
-            this.sceneEl = this.el.sceneEl; this.model = null; this.textureCanvas = null; this.textureContext = null; this.texture = null; this.video = null;
-            this.el.addEventListener('model-loaded', () => { this.model = this.el.getObject3D('mesh'); this.setupTexture(); });
+            this.sceneEl = this.el.sceneEl; this.model = null; this.textureCanvas = null; this.textureContext = null; this.texture = null; this.video = null; this.logged = false;
+            this.el.addEventListener('model-loaded', () => { this.model = this.el.getObjectD('mesh'); this.setupTexture(); });
             this.sceneEl.addEventListener('arReady', () => { this.video = document.querySelector('video'); });
         },
         setupTexture: function() {
@@ -109,29 +116,23 @@
             this.textureContext = this.textureCanvas.getContext('2d');
             this.texture = new THREE.CanvasTexture(this.textureCanvas);
             this.texture.minFilter = THREE.LinearFilter; this.texture.magFilter = THREE.LinearFilter; this.texture.colorSpace = THREE.SRGBColorSpace;
-            this.model.traverse((node) => {
-                if (node.isMesh && node.material) {
-                    node.material = node.material.clone(); node.material.map = this.texture; node.material.needsUpdate = true;
-                }
-            });
+            this.model.traverse((node) => { if (node.isMesh && node.material) { node.material = node.material.clone(); node.material.map = this.texture; node.material.needsUpdate = true; } });
         },
         tick: function() {
             const mindarSystem = this.el.sceneEl.systems['mindar-image-system'];
             if (this.video && this.textureContext && mindarSystem && mindarSystem.controller && this.el.object3D.visible) {
-                // =====================================================================
-                // CORRECCIÓN FINAL: Usamos la función correcta 'getMarkerWorldCorners'
-                // =====================================================================
-                const markerCorners = mindarSystem.controller.getMarkerWorldCorners(0);
-
-                if (markerCorners) {
-                    this.textureContext.clearRect(0, 0, this.textureCanvas.width, this.textureCanvas.height);
-                    const screenCoords = markerCorners.map(corner => {
-                        const vector = new THREE.Vector3(corner.x, corner.y, corner.z).project(this.el.sceneEl.camera);
-                        return { x: (vector.x + 1) * this.video.videoWidth / 2, y: (-vector.y + 1) * this.video.videoHeight / 2 };
-                    });
-                    this.drawPerspectiveCorrectedImage(screenCoords);
-                    this.texture.needsUpdate = true;
-                }
+                try {
+                    const markerCorners = mindarSystem.controller.getMarkerWorldCorners(0);
+                    if (markerCorners) {
+                        this.textureContext.clearRect(0, 0, this.textureCanvas.width, this.textureCanvas.height);
+                        const screenCoords = markerCorners.map(corner => {
+                            const vector = new THREE.Vector3(corner.x, corner.y, corner.z).project(this.el.sceneEl.camera);
+                            return { x: (vector.x + 1) * this.video.videoWidth / 2, y: (-vector.y + 1) * this.video.videoHeight / 2 };
+                        });
+                        this.drawPerspectiveCorrectedImage(screenCoords);
+                        this.texture.needsUpdate = true;
+                    }
+                } catch(e) { if (!this.logged) { console.error("Error al proyectar la textura:", e); this.logged = true; } }
             }
         },
         drawPerspectiveCorrectedImage: function(points) {
@@ -165,70 +166,103 @@
     });
 
     document.addEventListener('DOMContentLoaded', () => {
-        // =====================================================================
-        // NOTA PARA DESARROLLO:
-        // Incrementar esta versión consecutivamente con cada corrección o cambio funcional.
-        // =====================================================================
-        const APP_VERSION = 'v1.1';
+        const APP_VERSION = 'v2.0';
+        const CACHE_NAME = `ar-color-cache-${APP_VERSION}`;
         document.getElementById('app-version').textContent = APP_VERSION;
 
-        const state = { isArActive: false };
-        const arStatusText = document.getElementById('ar-status-text');
-        const statusLoader = document.getElementById('status-loader');
-        const startButton = document.getElementById('start-ar-btn');
-        const GITHUB_BASE_URL = 'https://raw.githubusercontent.com/instructorandradedcc/propuesta-AR/main/asetss/';
+        const state = { isArActive: false, assets: {} };
 
-        const markerImageUrl = `${GITHUB_BASE_URL}imagenes/cabeza1.png`;
-        const markerUrl = `${GITHUB_BASE_URL}markers/mano-iz-protesis.mind`;
-        const modelUrl = `${GITHUB_BASE_URL}modelss/cabeza1.glb`;
+        const GITHUB_BASE_URL = 'https://raw.githubusercontent.com/instructorandradedcc/propuesta-AR/main/asetss/';
+        const ASSET_URLS = {
+            image: `${GITHUB_BASE_URL}imagenes/cabeza1.png`,
+            marker: `${GITHUB_BASE_URL}markers/mano-iz-protesis.mind`,
+            model: `${GITHUB_BASE_URL}modelss/cabeza1.glb`
+        };
+
+        const pages = {
+            loader: document.getElementById('page-loader'),
+            ar: document.getElementById('page-ar')
+        };
+
+        function navigateTo(pageId) {
+            Object.values(pages).forEach(p => p.classList.remove('active'));
+            if(pages[pageId]) pages[pageId].classList.add('active');
+        }
+
+        async function fetchAndCache(url, cache) {
+            const cachedResponse = await cache.match(url);
+            if (cachedResponse) return cachedResponse;
+            const networkResponse = await fetch(url);
+            if (networkResponse.ok) {
+                await cache.put(url, networkResponse.clone());
+            }
+            return networkResponse;
+        }
+
+        async function loadAndCacheAssets() {
+            const loadingStatusDiv = document.getElementById('loading-status');
+            const loadingText = document.getElementById('loading-text');
+            const loadButton = document.getElementById('load-assets-btn');
+            
+            loadingStatusDiv.classList.remove('hidden');
+            loadButton.disabled = true;
+
+            try {
+                const cache = await caches.open(CACHE_NAME);
+                const assetKeys = Object.keys(ASSET_URLS);
+                
+                const promises = assetKeys.map(async (key) => {
+                    loadingText.textContent = `Descargando ${key}...`;
+                    const res = await fetchAndCache(ASSET_URLS[key], cache);
+                    if (!res.ok) throw new Error(`Failed to fetch ${key}`);
+                    const blob = await res.blob();
+                    state.assets[key] = URL.createObjectURL(blob);
+                });
+
+                await Promise.all(promises);
+                
+                loadingText.textContent = '¡Recursos cargados!';
+                document.getElementById('marker-image').src = state.assets.image;
+                document.getElementById('marker-image').classList.remove('hidden');
+                setTimeout(() => navigateTo('ar'), 1000);
+
+            } catch (error) {
+                loadingText.textContent = `Error: ${error.message}`;
+                loadButton.disabled = false;
+            }
+        }
 
         async function initializeApp() {
-            const markerImageElement = document.getElementById('marker-image');
-            const markerLoader = document.getElementById('marker-loader');
+            try {
+                const cache = await caches.open(CACHE_NAME);
+                const keys = Object.keys(ASSET_URLS);
+                const responses = await Promise.all(keys.map(key => cache.match(ASSET_URLS[key])));
 
-            markerImageElement.onload = () => {
-                markerImageElement.classList.remove('hidden');
-                markerLoader.classList.add('hidden');
-                arStatusText.textContent = 'Cargando modelo 3D y marcador...';
-                statusLoader.classList.remove('hidden');
-                preloadAssets();
-            };
-            markerImageElement.onerror = () => {
-                markerLoader.classList.add('hidden');
-                arStatusText.innerHTML = '<span class="text-red-500 font-semibold">Error al cargar la imagen de muestra.</span>';
-            };
-            markerImageElement.src = markerImageUrl;
-
-            async function preloadAssets() {
-                try {
-                    const [modelResponse, markerResponse] = await Promise.all([
-                        fetch(modelUrl),
-                        fetch(markerUrl)
-                    ]);
-
-                    if (!modelResponse.ok) throw new Error(`No se pudo cargar el modelo 3D (${modelResponse.status})`);
-                    if (!markerResponse.ok) throw new Error(`No se pudo cargar el marcador (.mind) (${markerResponse.status})`);
-
-                    arStatusText.textContent = '¡Recursos listos! Ya puedes iniciar la AR.';
-                    statusLoader.classList.add('hidden');
-                    startButton.disabled = false;
-
-                } catch (error) {
-                    arStatusText.innerHTML = `<span class="text-red-500 font-semibold">Error: ${error.message}</span>`;
-                    statusLoader.classList.add('hidden');
+                if (responses.every(res => res && res.ok)) {
+                    const blobs = await Promise.all(responses.map(res => res.blob()));
+                    keys.forEach((key, i) => { state.assets[key] = URL.createObjectURL(blobs[i]); });
+                    
+                    document.getElementById('loader-welcome-text').textContent = 'Recursos encontrados en caché. ¡Listo para empezar!';
+                    document.getElementById('marker-image').src = state.assets.image;
+                    document.getElementById('marker-image').classList.remove('hidden');
+                    navigateTo('ar');
                 }
+            } catch (error) {
+                console.warn('Cache check failed:', error);
             }
         }
 
         function setupAndStartAR() {
-            startButton.disabled = true;
+            document.getElementById('start-ar-btn').disabled = true;
             document.getElementById('ar-preloader').classList.remove('hidden');
             const arSceneContainer = document.getElementById('ar-scene-container');
             arSceneContainer.innerHTML = ''; 
 
             const sceneHTML = `
-                <a-scene id="ar-scene" embedded vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false" mindar-image="imageTargetSrc: ${markerUrl}; autoStart: true; uiLoading: no; uiError: no; uiScanning: no;" color-space="sRGB" renderer="colorManagement: true, physicallyCorrectLights">
-                    <a-assets> <a-asset-item id="coloring-model" src="${modelUrl}"></a-asset-item> </a-assets>
+                <a-scene id="ar-scene" embedded vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false" mindar-image="imageTargetSrc: ${state.assets.marker}; autoStart: true; uiLoading: no; uiError: no; uiScanning: no;" color-space="sRGB" renderer="colorManagement: true, physicallyCorrectLights">
+                    <a-assets timeout="30000">
+                        <a-asset-item id="coloring-model" src="${state.assets.model}"></a-asset-item>
+                    </a-assets>
                     <a-camera position="0 0 0" look-controls="enabled: false" fov="75"></a-camera>
                     <a-entity mindar-image-target="targetIndex: 0">
                         <a-gltf-model src="#coloring-model" position="0 -0.4 0" rotation="0 0 0" scale="0.8 0.8 0.8" ar-rotator texture-from-video></a-gltf-model>
@@ -240,17 +274,15 @@
             
             sceneEl.addEventListener('arReady', () => {
                 document.getElementById('ar-preloader').classList.add('hidden');
-                const appContainer = document.getElementById('app');
                 document.documentElement.classList.add('ar-active');
                 document.body.classList.add('ar-active');
-                appContainer.classList.add('ar-fullscreen');
+                document.getElementById('app').classList.add('ar-fullscreen');
                 arSceneContainer.classList.add('ar-active');
                 document.getElementById('ar-ui-container').classList.add('hidden');
                 document.getElementById('ar-active-controls').classList.remove('hidden');
                 document.getElementById('scanning-ui').classList.remove('hidden');
                 state.isArActive = true;
             });
-
             sceneEl.addEventListener('targetFound', () => document.getElementById('scanning-ui').classList.add('hidden'));
             sceneEl.addEventListener('targetLost', () => document.getElementById('scanning-ui').classList.remove('hidden'));
         }
@@ -264,19 +296,18 @@
             }
             arSceneContainer.innerHTML = '';
             
-            const appContainer = document.getElementById('app');
             document.documentElement.classList.remove('ar-active');
             document.body.classList.remove('ar-active');
-            appContainer.classList.remove('ar-fullscreen');
+            document.getElementById('app').classList.remove('ar-fullscreen');
             document.getElementById('ar-ui-container').classList.remove('hidden');
             document.getElementById('ar-active-controls').classList.add('hidden');
             document.getElementById('scanning-ui').classList.add('hidden');                        
             state.isArActive = false;
-            startButton.disabled = false;
-            arStatusText.textContent = '¡Recursos listos! Ya puedes iniciar la AR.';
+            document.getElementById('start-ar-btn').disabled = false;
         }                
 
-        startButton.addEventListener('click', setupAndStartAR);
+        document.getElementById('load-assets-btn').addEventListener('click', loadAndCacheAssets);
+        document.getElementById('start-ar-btn').addEventListener('click', setupAndStartAR);
         document.getElementById('stop-ar-btn').addEventListener('click', stopAR);
 
         initializeApp();
@@ -284,6 +315,7 @@
     </script>
 </body>
 </html>
+
 
 
 
