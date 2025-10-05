@@ -172,13 +172,13 @@
     });
 
     document.addEventListener('DOMContentLoaded', () => {
-        const APP_VERSION = 'v2.4'; // Updated version
+        const APP_VERSION = 'v2.5'; // Updated version
         const CACHE_NAME = `ar-color-cache-${APP_VERSION}`;
         document.getElementById('app-version').textContent = APP_VERSION;
 
         const state = { isArActive: false, assets: {} };
-        // CORRECTED: Base URL was misspelled ('asetss' -> 'assets')
-        const GITHUB_BASE_URL = 'https://raw.githubusercontent.com/instructorandradedcc/propuesta-AR/main/assets/';
+        // CORRECTED: Reverted to the correct base URL from the user's repository
+        const GITHUB_BASE_URL = 'https://raw.githubusercontent.com/instructorandradedcc/propuesta-AR/main/asetss/';
 
         const ASSET_MAPPING = [{
             name: 'cabeza1',
@@ -197,14 +197,13 @@
             if(pages[pageId]) pages[pageId].classList.add('active');
         }
         
-        // IMPROVEMENT: Centralized function to get asset URLs to avoid repetition and errors.
+        // CORRECTED: Reverted to the correct sub-folder paths from the user's repository
         function getAssetUrls() {
             const asset = ASSET_MAPPING[0];
             return {
-                image: `${GITHUB_BASE_URL}images/${asset.imageFile}`,
+                image: `${GITHUB_BASE_URL}imagenes/${asset.imageFile}`,
                 marker: `${GITHUB_BASE_URL}markers/${asset.markerFile}`,
-                // CORRECTED: Sub-folder was misspelled ('modelss' -> 'models')
-                model: `${GITHUB_BASE_URL}models/${asset.modelFile}`
+                model: `${GITHUB_BASE_URL}modelss/${asset.modelFile}`
             };
         }
 
@@ -382,6 +381,7 @@
     </script>
 </body>
 </html>
+
 
 
 
