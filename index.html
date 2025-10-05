@@ -118,7 +118,11 @@
         tick: function() {
             const mindarSystem = this.el.sceneEl.systems['mindar-image-system'];
             if (this.video && this.textureContext && mindarSystem && mindarSystem.controller && this.el.object3D.visible) {
-                const markerCorners = mindarSystem.controller.getMarkerWorldPosition(0);
+                // =====================================================================
+                // CORRECCIÓN FINAL: Usamos la función correcta 'getMarkerWorldCorners'
+                // =====================================================================
+                const markerCorners = mindarSystem.controller.getMarkerWorldCorners(0);
+
                 if (markerCorners) {
                     this.textureContext.clearRect(0, 0, this.textureCanvas.width, this.textureCanvas.height);
                     const screenCoords = markerCorners.map(corner => {
@@ -165,7 +169,7 @@
         // NOTA PARA DESARROLLO:
         // Incrementar esta versión consecutivamente con cada corrección o cambio funcional.
         // =====================================================================
-        const APP_VERSION = 'v1.0';
+        const APP_VERSION = 'v1.1';
         document.getElementById('app-version').textContent = APP_VERSION;
 
         const state = { isArActive: false };
@@ -280,5 +284,6 @@
     </script>
 </body>
 </html>
+
 
 
