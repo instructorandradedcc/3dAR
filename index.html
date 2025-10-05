@@ -172,12 +172,11 @@
     });
 
     document.addEventListener('DOMContentLoaded', () => {
-        const APP_VERSION = 'v2.5'; // Updated version
+        const APP_VERSION = 'v2.6'; // Updated version
         const CACHE_NAME = `ar-color-cache-${APP_VERSION}`;
         document.getElementById('app-version').textContent = APP_VERSION;
 
         const state = { isArActive: false, assets: {} };
-        // CORRECTED: Reverted to the correct base URL from the user's repository
         const GITHUB_BASE_URL = 'https://raw.githubusercontent.com/instructorandradedcc/propuesta-AR/main/asetss/';
 
         const ASSET_MAPPING = [{
@@ -197,7 +196,6 @@
             if(pages[pageId]) pages[pageId].classList.add('active');
         }
         
-        // CORRECTED: Reverted to the correct sub-folder paths from the user's repository
         function getAssetUrls() {
             const asset = ASSET_MAPPING[0];
             return {
@@ -207,13 +205,24 @@
             };
         }
 
+        // IMPROVED: This function now handles caching errors gracefully.
         async function fetchWithCache(url, cache) {
             const cachedResponse = await cache.match(url);
             if (cachedResponse) return cachedResponse;
+
             const networkResponse = await fetch(url);
+            
             if (networkResponse.ok) {
-                await cache.put(url, networkResponse.clone());
+                try {
+                    // Clone the response because its body can only be used once.
+                    await cache.put(url, networkResponse.clone());
+                } catch (e) {
+                    // Log a warning if caching fails, but don't stop the application.
+                    console.warn(`No se pudo guardar el recurso en caché: ${url}`, e);
+                }
             }
+            
+            // Return the original response from the network.
             return networkResponse;
         }
 
@@ -261,7 +270,7 @@
 
             try {
                 const cache = await caches.open(CACHE_NAME);
-                const urls = getAssetUrls(); // Use the helper function
+                const urls = getAssetUrls(); 
 
                 const filesToLoad = Object.entries(urls);
                 let loadedCount = 0;
@@ -270,6 +279,8 @@
                 for (const [key, url] of filesToLoad) {
                     loadingText.textContent = `Descargando ${key}...`;
                     const res = await fetchWithCache(url, cache);
+                    // This error will now only trigger if the file is truly not found (404)
+                    // or if there's a server/network error, not a caching error.
                     if (!res.ok) throw new Error(`Fallo al descargar ${key} (Status: ${res.status})`);
                     const blob = await res.blob();
                     tempAssets[key] = URL.createObjectURL(blob);
@@ -295,7 +306,7 @@
         async function initializeApp() {
             try {
                 const cache = await caches.open(CACHE_NAME);
-                const urls = getAssetUrls(); // Use the helper function
+                const urls = getAssetUrls(); 
                 
                 const responses = await Promise.all(Object.values(urls).map(url => cache.match(url)));
 
@@ -381,6 +392,7 @@
     </script>
 </body>
 </html>
+
 
 
 
