@@ -251,7 +251,7 @@
     import { DragControls } from 'three/addons/controls/DragControls.js';
 
     document.addEventListener('DOMContentLoaded', () => {
-        const APP_VERSION = '2.4-Fixed-Pairing'; 
+        const APP_VERSION = '2.5-Final-Pairing'; 
         const state = {
             assets: [],
             currentPage: 'page-upload',
@@ -270,21 +270,23 @@
         const GITHUB_BASE_URL = 'https://raw.githubusercontent.com/instructorandradedcc/propuesta-AR/main/asetss/';
                 
         // ======================================================
-        // INICIO: CORRECCIÓN DE ASOCIACIÓN DE MODELOS
+        // INICIO: ASOCIACIÓN DE MODELOS CORREGIDA
         // Se asegura que cada marcador cargue su modelo correspondiente.
+        // El orden de las líneas no afecta el resultado, solo la
+        // correspondencia entre 'marker' y 'model' en cada objeto.
         // ======================================================
         const ASSET_MAPPING = [
-            { marker: 'cabeza1', model: 'cabeza1', image: 'cabeza1.png' },
-            { marker: 'corazon', model: 'corazon', image: 'corazon.png' },
+            { marker: 'protesis-mano-brazo', model: 'protesis-mano-brazo', image: 'protesis-mano-brazo.png' },
+            { marker: 'mano-iz-protesis', model: 'mano-iz-protesis', image: 'mano-iz-protesis.png' },
+            { marker: 'huesosmano', model: 'huesosmano', image: 'huesosmano.png' },
+            { marker: 'hueso-columna', model: 'hueso-columna', image: 'hueso-columna.png' },
             { marker: 'dedo-mano', model: 'dedo-mano', image: 'dedo-mano.png' },
             { marker: 'dedo', model: 'dedo', image: 'dedo.png' },
-            { marker: 'hueso-columna', model: 'hueso-columna', image: 'hueso-columna.png' },
-            { marker: 'huesosmano', model: 'huesosmano', image: 'huesosmano.png' },
-            { marker: 'mano-iz-protesis', model: 'mano-iz-protesis', image: 'mano-iz-protesis.png' },
-            { marker: 'protesis-mano-brazo', model: 'protesis-mano-brazo', image: 'protesis-mano-brazo.png' }
+            { marker: 'corazon', model: 'corazon', image: 'corazon.png' },
+            { marker: 'cabeza1', model: 'cabeza1', image: 'cabeza1.png' }
         ];
         // ======================================================
-        // FIN: CORRECCIÓN DE ASOCIACIÓN DE MODELOS
+        // FIN: ASOCIACIÓN DE MODELOS CORREGIDA
         // ======================================================
 
         // ======================================================
@@ -690,7 +692,8 @@
         
         function updateModelTransformFromState(transform) {
             if (!editor.currentTarget) return;
-            const asset = state.assets.find(a => a.id === parseInt(document.getElementById('asset-selector').value));
+            const assetId = parseInt(document.getElementById('asset-selector').value);
+            const asset = state.assets.find(a => a.id === assetId);
             if (!asset) return;
             const finalScale = transform.scale.x * asset.normalizationFactor;
             editor.currentTarget.position.set(transform.position.x, transform.position.y, transform.position.z);
@@ -712,9 +715,9 @@
             tempScene.style.cssText = 'position:fixed; height:1px; width:1px; top:-9999px; left:-9999px;';
             const assetsEl = document.createElement('a-assets');
             assetsEl.setAttribute('timeout', '30000');
-            state.assets.forEach(asset => {
+            state.assets.forEach((asset, index) => {
                 const assetItem = document.createElement('a-asset-item');
-                assetItem.id = `model-${asset.id}`;
+                assetItem.id = `model-${index}`; // Usar index para asegurar consistencia
                 assetItem.setAttribute('src', asset.modelDataUrl);
                 assetItem.setAttribute('response-type', 'arraybuffer');
                 assetsEl.appendChild(assetItem);
@@ -750,8 +753,8 @@
             const arSceneContainer = document.getElementById('ar-scene-container');
             arSceneContainer.innerHTML = ''; 
 
-            const assetsHTML = state.assets.map(asset => 
-                `<a-asset-item id="model-${asset.id}" src="${asset.modelDataUrl}" response-type="arraybuffer"></a-asset-item>`
+            const assetsHTML = state.assets.map((asset, index) => 
+                `<a-asset-item id="model-${index}" src="${asset.modelDataUrl}" response-type="arraybuffer"></a-asset-item>`
             ).join('');
                         
             const targetsHTML = state.assets.map((asset, index) => {
@@ -760,7 +763,7 @@
                 return `
                     <a-entity mindar-image-target="targetIndex: ${index}">
                         <a-gltf-model 
-                            src="#model-${asset.id}" 
+                            src="#model-${index}" 
                             position="${t.position.x} ${t.position.y} ${t.position.z}" 
                             rotation="${t.rotation.x} ${t.rotation.y} ${t.rotation.z}" 
                             scale="${finalScale} ${finalScale} ${finalScale}" 
@@ -862,7 +865,7 @@
                 if (!editor.renderer) initEditor();
                 populateEditorSelector();
                 if (state.assets.length > 0) { 
-                     displayAssetInEditor(parseInt(document.getElementById('asset-selector').value) || 0);
+                     displayAssetInEditor(state.assets.findIndex(a => a.name === document.getElementById('asset-selector').value) || 0);
                 }
             } else if (pageId === 'page-ar') {
                 document.getElementById('start-ar-pc-btn').disabled = true;
@@ -900,6 +903,8 @@
                     };
                 }));
                 state.assets = assets;
+                // Reordenar alfabéticamente para el selector
+                state.assets.sort((a, b) => a.name.localeCompare(b.name));
                 return true;
             } catch (error) {
                 console.warn("No se pudieron cargar los assets desde la caché:", error.message);
@@ -933,13 +938,21 @@
         document.getElementById('stop-ar-btn').addEventListener('click', stopAR);
         document.getElementById('fullscreen-ar-btn').addEventListener('click', toggleFullScreen);
         document.getElementById('back-to-editor-btn-post').addEventListener('click', () => { navigateTo('page-editor'); });
-        document.getElementById('asset-selector').addEventListener('change', (e) => displayAssetInEditor(parseInt(e.target.value)));                        
-        document.getElementById('move-conjunto-toggle').addEventListener('change', setupDragControls);
+        
+        document.getElementById('asset-selector').addEventListener('change', (e) => {
+             const selectedAssetIndex = state.assets.findIndex(a => a.name === e.target.value);
+             displayAssetInEditor(selectedAssetIndex);
+        });
+
+        document.getElementById('move-conjunto-toggle').addEventListener('change', () => {
+             const selectedAssetIndex = state.assets.findIndex(a => a.name === document.getElementById('asset-selector').value);
+             if (selectedAssetIndex !== -1) displayAssetInEditor(selectedAssetIndex);
+        });
                 
         ['pos-x', 'pos-y', 'pos-z', 'rot-x', 'rot-y', 'rot-z', 'scale'].forEach(id => {
             document.getElementById(id).addEventListener('input', () => {
-                const assetId = parseInt(document.getElementById('asset-selector').value);
-                const asset = state.assets.find(a => a.id === assetId);
+                const assetName = document.getElementById('asset-selector').value;
+                const asset = state.assets.find(a => a.name === assetName);
                 if (!asset || !editor.currentTarget) return;
                                                 
                 asset.transform.position = { x: parseFloat(document.getElementById('pos-x').value) || 0, y: parseFloat(document.getElementById('pos-y').value) || 0, z: parseFloat(document.getElementById('pos-z').value) || 0 };
