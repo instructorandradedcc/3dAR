@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Libro para Colorear con Realidad Aumentada</title>
+    <title>Libro para Colorear con Realidad Aumentada v4.0</title>
     <!-- Favicon -->
     <link rel="icon" href="https://raw.githubusercontent.com/instructorandradedcc/propuesta-AR/main/favicon3dAR.ico">
     <script src="https://cdn.tailwindcss.com"></script>
@@ -46,7 +46,7 @@
                      Libro para Colorear con Realidad Aumentada
                      <span id="app-version" class="text-base align-middle font-normal text-gray-400 ml-2"></span>
                  </h1>
-                 <p class="text-center text-gray-500">Colorea el dibujo y mira cómo cobra vida.</p>
+                 <p class="text-center text-gray-500">Colorea los dibujos y mira cómo cobran vida.</p>
              </div>
         </div>
 
@@ -55,7 +55,7 @@
             <h2 class="text-2xl font-semibold mb-4 border-b pb-2">Paso 1: Cargar Recursos</h2>
             <div class="bg-indigo-50 border-l-4 border-indigo-500 text-indigo-700 p-4 mb-6" role="alert">
                 <p class="font-bold">¡Bienvenido!</p>
-                <p id="loader-welcome-text">Presiona el botón para descargar los recursos. Los archivos se guardarán en la caché de tu navegador para acelerar futuras cargas.</p>
+                <p id="loader-welcome-text">Presiona el botón para descargar los dibujos. Se guardarán en la caché de tu navegador.</p>
             </div>                               
             <div class="mt-6 flex flex-col sm:flex-row justify-center items-center gap-4">
                 <button id="load-assets-btn" class="bg-green-500 text-white font-bold py-3 px-6 rounded-lg hover:bg-green-600 transition duration-300 text-lg shadow-md w-full sm:w-auto flex justify-center items-center">
@@ -79,9 +79,15 @@
              <div class="relative">
                  <div id="ar-ui-container" class="relative z-10">
                      <h2 class="text-2xl font-semibold mb-2 text-center">Paso 2: Prepara tu dibujo</h2>
-                     <p class="text-center text-gray-600 mb-4">Usa esta imagen para colorear. Luego, presiona "Iniciar AR".</p>
+                     <p class="text-center text-gray-600 mb-4">Colorea uno de los dibujos. Luego, selecciona el modelo correspondiente y presiona "Iniciar AR".</p>
+                     
+                     <div class="mb-4">
+                         <label for="asset-selector" class="block mb-2 font-medium text-gray-700">Seleccionar Modelo:</label>
+                         <select id="asset-selector" class="w-full p-2 border rounded"></select>
+                     </div>
+
                      <div id="marker-preview-container" class="mb-4 bg-gray-100 p-4 rounded-lg flex justify-center items-center min-h-[200px]">
-                         <img id="marker-image" class="max-w-full max-h-64 h-auto rounded shadow-md hidden" alt="Imagen del marcador para colorear">
+                         <img id="marker-image" class="max-w-full max-h-64 h-auto rounded shadow-md" alt="Imagen del marcador para colorear">
                      </div>
                       <div class="mt-6 flex justify-center items-center gap-4">
                           <button id="start-ar-btn" class="bg-green-500 text-white font-bold py-3 px-6 rounded-lg hover:bg-green-600 transition duration-300 text-lg shadow-md flex items-center justify-center gap-2">
@@ -109,6 +115,9 @@
     <script type="module">
     import * as THREE from 'three';
     
+    // ======================================================
+    // COMPONENTE PARA LA TEXTURA EN VIVO (de tu código original)
+    // ======================================================
     AFRAME.registerComponent('texture-from-video', {
         schema: {},
         init: function () {
@@ -155,15 +164,19 @@
         drawTriangle: function(p0, p1, p2, t0, t1, t2) {
             const ctx = this.textureContext, video = this.video;
             ctx.beginPath(); ctx.moveTo(t0.x, t0.y); ctx.lineTo(t1.x, t1.y); ctx.lineTo(t2.x, t2.y); ctx.closePath(); ctx.clip();
-            ctx.save(); // Save context state before transform
+            ctx.save();
             const det = p1.x * p2.y + p0.x * p1.y + p2.x * p0.y - p1.x * p0.y - p2.x * p1.y - p0.x * p2.y;
+            if (Math.abs(det) < 1e-8) { ctx.restore(); return; } // Evita errores de división por cero
             const a = (p2.y * t0.x - p0.y * t2.x + (p0.y - p2.y) * t1.x) / det, b = (p2.x * t0.x - p0.x * t2.x + (p0.x - p2.x) * t1.x) / det, c = t0.x - a * p0.x - b * p0.y;
             const d = (p2.y * t0.y - p0.y * t2.y + (p0.y - p2.y) * t1.y) / det, e = (p2.x * t0.y - p0.x * t2.y + (p0.x - p2.x) * t1.y) / det, f = t0.y - d * p0.x - e * p0.y;
             ctx.transform(a, d, b, e, c, f); ctx.drawImage(video, 0, 0);
-            ctx.restore(); // Restore context state
+            ctx.restore();
         }
     });
 
+    // ======================================================
+    // COMPONENTE PARA LA ROTACIÓN (de tu código original)
+    // ======================================================
     AFRAME.registerComponent('ar-rotator', {
         schema: { rotationFactor: { type: 'number', default: 1 } },
         init: function () {
@@ -176,21 +189,24 @@
         },
     });
 
+    // ======================================================
+    // LÓGICA PRINCIPAL DE LA APLICACIÓN (basada en el archivo guía)
+    // ======================================================
     document.addEventListener('DOMContentLoaded', () => {
-        const APP_VERSION = 'v3.2'; // Updated version
-        const CACHE_NAME = `ar-color-cache-${APP_VERSION}`;
+        const APP_VERSION = 'v4.0';
+        const CACHE_NAME = `ar-coloring-book-cache-${APP_VERSION}`;
         document.getElementById('app-version').textContent = APP_VERSION;
 
-        const state = { isArActive: false, assets: {} };
+        const state = { isArActive: false, assets: [] };
         const GITHUB_BASE_URL = 'https://cdn.statically.io/gh/instructorandradedcc/propuesta-AR/main/asetss/';
 
-        // SOLUCIÓN 1: Alinear los archivos. Ahora el marcador y la imagen a colorear son el mismo: 'cabeza1'
-        const ASSET_MAPPING = [{
-            name: 'cabeza1',
-            markerFile: 'cabeza1.mind', // Archivo de detección
-            modelFile: 'cabeza1.glb',
-            imageFile: 'cabeza1.png' // Imagen que ve el usuario
-        }];
+        // Lista de todos los dibujos/modelos disponibles
+        const ASSET_MAPPING = [
+            { name: 'cabeza1', modelFile: 'cabeza1.glb', markerFile: 'cabeza1.mind', imageFile: 'cabeza1.png' },
+            { name: 'corazon', modelFile: 'corazon.glb', markerFile: 'corazon.mind', imageFile: 'corazon.png' },
+            { name: 'dedo', modelFile: 'dedo.glb', markerFile: 'dedo.mind', imageFile: 'dedo.png' },
+            { name: 'huesos-mano', modelFile: 'huesosmano.glb', markerFile: 'huesosmano.mind', imageFile: 'huesosmano.png' },
+        ];
 
         const pages = {
             loader: document.getElementById('page-loader'),
@@ -201,15 +217,6 @@
             Object.values(pages).forEach(p => p.classList.remove('active'));
             if(pages[pageId]) pages[pageId].classList.add('active');
         }
-        
-        function getAssetUrls() {
-            const asset = ASSET_MAPPING[0];
-            return {
-                image: `${GITHUB_BASE_URL}imagenes/${asset.imageFile}`,
-                marker: `${GITHUB_BASE_URL}markers/${asset.markerFile}`,
-                model: `${GITHUB_BASE_URL}modelss/${asset.modelFile}`
-            };
-        }
 
         async function fetchWithCache(url, cache) {
             const cachedResponse = await cache.match(url);
@@ -217,8 +224,7 @@
             try {
                 const networkResponse = await fetch(url);
                 if (networkResponse.ok) {
-                    try { await cache.put(url, networkResponse.clone()); } 
-                    catch (e) { console.warn(`No se pudo guardar el recurso en caché: ${url}`, e); }
+                    await cache.put(url, networkResponse.clone());
                 }
                 return networkResponse;
             } catch (e) {
@@ -228,76 +234,102 @@
         }
 
         async function clearCacheAndReload() {
-            // ... (código sin cambios)
+            document.getElementById('load-assets-btn').disabled = true;
+            document.getElementById('clear-cache-btn').disabled = true;
+            const loadingText = document.getElementById('loading-text');
+            document.getElementById('loading-status').classList.remove('hidden');
+            loadingText.textContent = 'Limpiando caché...';
+            try {
+                const keys = await caches.keys();
+                await Promise.all(keys.map(key => caches.delete(key)));
+                loadingText.innerHTML = '<span class="text-green-600">Caché limpiada. Recargando...</span>';
+                setTimeout(() => window.location.reload(), 1500);
+            } catch (error) {
+                loadingText.innerHTML = `<span class="text-red-600">Error al limpiar la caché.</span>`;
+            }
         }
 
         async function loadAndCacheAssets() {
             const loadingStatusDiv = document.getElementById('loading-status');
             const loadingText = document.getElementById('loading-text');
             const progressBar = document.getElementById('loading-progress-bar');
-            const loadButton = document.getElementById('load-assets-btn');
             
             loadingStatusDiv.classList.remove('hidden');
-            loadButton.disabled = true;
+            document.getElementById('load-assets-btn').disabled = true;
             progressBar.style.width = '0%';
-            progressBar.classList.remove('bg-red-500');
 
             try {
                 const cache = await caches.open(CACHE_NAME);
-                const urls = getAssetUrls(); 
-
-                // SOLUCIÓN 2: Cargar todos los assets como blobs, igual que en el ejemplo funcional.
-                const filesToLoad = Object.entries(urls);
+                const totalAssets = ASSET_MAPPING.length;
                 let loadedCount = 0;
-                const tempAssets = {};
+                const loadedAssets = [];
 
-                for (const [key, url] of filesToLoad) {
-                    loadingText.textContent = `Descargando ${key}...`;
-                    const res = await fetchWithCache(url, cache);
-                    if (!res.ok) throw new Error(`Fallo al descargar ${key} (Status: ${res.status})`);
-                    const blob = await res.blob();
-                    tempAssets[key] = URL.createObjectURL(blob);
+                for (const assetInfo of ASSET_MAPPING) {
+                    loadingText.textContent = `Descargando ${assetInfo.name}...`;
+                    const urls = {
+                        marker: `${GITHUB_BASE_URL}markers/${assetInfo.markerFile}`,
+                        model: `${GITHUB_BASE_URL}modelss/${assetInfo.modelFile}`,
+                        image: `${GITHUB_BASE_URL}imagenes/${assetInfo.imageFile}`
+                    };
+                    const [markerRes, modelRes, imageRes] = await Promise.all([
+                        fetchWithCache(urls.marker, cache), fetchWithCache(urls.model, cache), fetchWithCache(urls.image, cache)
+                    ]);
+                    if (!markerRes.ok || !modelRes.ok || !imageRes.ok) throw new Error(`Fallo al descargar ${assetInfo.name}`);
+                    
+                    const [markerBlob, modelBlob, imageBlob] = await Promise.all([markerRes.blob(), modelRes.blob(), imageRes.blob()]);
+                    
+                    loadedAssets.push({
+                        id: loadedCount,
+                        name: assetInfo.name,
+                        markerDataUrl: URL.createObjectURL(markerBlob),
+                        modelDataUrl: URL.createObjectURL(modelBlob),
+                        imageDataUrl: URL.createObjectURL(imageBlob),
+                    });
+                    
                     loadedCount++;
-                    progressBar.style.width = `${(loadedCount / filesToLoad.length) * 100}%`;
+                    progressBar.style.width = `${(loadedCount / totalAssets) * 100}%`;
                 }
                 
-                state.assets = tempAssets;
-
+                state.assets = loadedAssets;
                 loadingText.textContent = '¡Recursos cargados!';
-                document.getElementById('marker-image').src = state.assets.image;
-                document.getElementById('marker-image').classList.remove('hidden');
+                populateAssetSelector();
+                updateMarkerPreview(state.assets[0].imageDataUrl);
                 setTimeout(() => navigateTo('ar'), 1000);
 
             } catch (error) {
-                loadingText.innerHTML = `<span class="text-red-500 font-semibold">Error al descargar: ${error.message}. Revisa la conexión o intenta más tarde.</span>`;
+                loadingText.innerHTML = `<span class="text-red-500 font-semibold">Error: ${error.message}</span>`;
                 progressBar.style.width = '100%';
                 progressBar.classList.add('bg-red-500');
-                loadButton.disabled = false;
+                document.getElementById('load-assets-btn').disabled = false;
             }
+        }
+        
+        function populateAssetSelector() {
+            const selector = document.getElementById('asset-selector');
+            selector.innerHTML = '';
+            state.assets.forEach(asset => {
+                const option = document.createElement('option');
+                option.value = asset.id;
+                option.textContent = asset.name.charAt(0).toUpperCase() + asset.name.slice(1); // Capitalize
+                selector.appendChild(option);
+            });
+        }
+
+        function updateMarkerPreview(imageUrl) {
+            document.getElementById('marker-image').src = imageUrl;
         }
 
         async function initializeApp() {
             try {
                 const cache = await caches.open(CACHE_NAME);
-                const urls = getAssetUrls(); 
-                
-                const responses = await Promise.all(Object.values(urls).map(url => cache.match(url)));
-
-                if (responses.every(res => res && res.ok)) {
-                    const blobs = await Promise.all(responses.map(res => res.blob()));
-                    state.assets = {
-                        image: URL.createObjectURL(blobs[0]),
-                        marker: URL.createObjectURL(blobs[1]),
-                        model: URL.createObjectURL(blobs[2])
-                    };
-                    
-                    document.getElementById('loader-welcome-text').textContent = 'Recursos encontrados en caché. ¡Listo para empezar!';
-                    document.getElementById('marker-image').src = state.assets.image;
-                    document.getElementById('marker-image').classList.remove('hidden');
-                    navigateTo('ar');
+                const keys = await cache.keys();
+                // Check if at least one full asset set is cached
+                if (keys.length >= 3) {
+                   await loadAndCacheAssets(); // This will load from cache if available
+                   document.getElementById('loader-welcome-text').textContent = "Recursos encontrados en caché. ¡Listo para empezar!";
                 }
             } catch (error) {
-                console.warn('Cache check failed:', error);
+                console.warn('Cache check failed, starting fresh.', error);
             }
         }
 
@@ -306,19 +338,25 @@
             document.getElementById('ar-preloader').classList.remove('hidden');
             const arSceneContainer = document.getElementById('ar-scene-container');
             arSceneContainer.innerHTML = ''; 
-            
-            // SOLUCIÓN 2 (Parte B): Añadir response-type="arraybuffer" para que A-Frame sepa cómo leer el blob del modelo.
-            // Y añadir parámetros de filtro del ejemplo funcional.
-            const mindARSettings = `imageTargetSrc: ${state.assets.marker}; autoStart: true; uiLoading: no; uiError: no; uiScanning: no; filterMinCF: 0.001; filterBeta: 10;`;
 
+            const selectedAssetId = parseInt(document.getElementById('asset-selector').value);
+            const selectedAsset = state.assets.find(a => a.id === selectedAssetId);
+            if (!selectedAsset) {
+                console.error("No se ha seleccionado un asset válido.");
+                return;
+            }
+
+            const mindARSettings = `imageTargetSrc: ${selectedAsset.markerDataUrl}; autoStart: true; uiLoading: no; uiError: no; uiScanning: no; filterMinCF: 0.001; filterBeta: 10;`;
+
+            // AHORA SE APLICA EL COMPONENTE texture-from-video
             const sceneHTML = `
                 <a-scene id="ar-scene" embedded vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false" mindar-image="${mindARSettings}" color-space="sRGB" renderer="colorManagement: true, physicallyCorrectLights">
                     <a-assets timeout="30000">
-                        <a-asset-item id="coloring-model" src="${state.assets.model}" response-type="arraybuffer"></a-asset-item>
+                        <a-asset-item id="coloring-model" src="${selectedAsset.modelDataUrl}" response-type="arraybuffer"></a-asset-item>
                     </a-assets>
                     <a-camera position="0 0 0" look-controls="enabled: false" fov="75"></a-camera>
                     <a-entity mindar-image-target="targetIndex: 0">
-                        <a-gltf-model src="#coloring-model" position="0 -0.4 0" rotation="0 0 0" scale="0.8 0.8 0.8" ar-rotator texture-from-video></a-gltf-model>
+                        <a-gltf-model src="#coloring-model" position="0 -0.25 0" rotation="0 0 0" scale="0.8 0.8 0.8" ar-rotator texture-from-video></a-gltf-model>
                     </a-entity>
                 </a-scene>`;
             arSceneContainer.innerHTML = sceneHTML;
@@ -341,18 +379,41 @@
         }
 
         function stopAR() {
-            // ... (código sin cambios)
-        }               
+            const arSceneContainer = document.getElementById('ar-scene-container');
+            const sceneEl = arSceneContainer.querySelector('a-scene');
+            if (sceneEl && sceneEl.systems['mindar-image-system']) { 
+                sceneEl.systems['mindar-image-system'].stop();
+                if (sceneEl.parentNode) sceneEl.parentNode.removeChild(sceneEl);
+            }
+            arSceneContainer.innerHTML = '';
+            
+            document.documentElement.classList.remove('ar-active');
+            document.body.classList.remove('ar-active');
+            document.getElementById('app').classList.remove('ar-fullscreen');
+            document.getElementById('ar-ui-container').classList.remove('hidden');
+            document.getElementById('ar-active-controls').classList.add('hidden');
+            document.getElementById('scanning-ui').classList.add('hidden');                        
+            state.isArActive = false;
+            document.getElementById('start-ar-btn').disabled = false;
+        }
 
         document.getElementById('load-assets-btn').addEventListener('click', loadAndCacheAssets);
         document.getElementById('clear-cache-btn').addEventListener('click', clearCacheAndReload);
         document.getElementById('start-ar-btn').addEventListener('click', setupAndStartAR);
         document.getElementById('stop-ar-btn').addEventListener('click', stopAR);
+        document.getElementById('asset-selector').addEventListener('change', (e) => {
+            const selectedAssetId = parseInt(e.target.value);
+            const selectedAsset = state.assets.find(a => a.id === selectedAssetId);
+            if (selectedAsset) {
+                updateMarkerPreview(selectedAsset.imageDataUrl);
+            }
+        });
 
         initializeApp();
     });
     </script>
 </body>
 </html>
+
 
 
