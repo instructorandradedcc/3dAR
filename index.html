@@ -9,7 +9,6 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
-
     <script type="importmap">
         {
             "imports": {
@@ -18,7 +17,7 @@
             }
         }
     </script>
-        <style>
+    <style>
         /* Estilos generales y para el modo AR */
         html.ar-active, body.ar-active {
              overflow: hidden;
@@ -41,7 +40,7 @@
         }
         .page { display: none; }
         .page.active { display: block; }
-        #editor-canvas { width: 100%; height: 400px; border: 1px solid #ccc; background: #f0f0f0; cursor: move; touch-action: none; border-radius: 8px; }                
+        #editor-canvas { width: 100%; height: 400px; border: 1px solid #ccc; background: #f0f0f0; cursor: move; touch-action: none; border-radius: 8px; }                        
         #ar-scene-container.ar-active {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 9990;
         }
@@ -83,7 +82,7 @@
             height: 40px;
             animation: spin 1s linear infinite;
         }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }                
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }                        
         #scanning-ui {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             z-index: 9991;
@@ -107,7 +106,7 @@
     </style>
 </head>
 <body class="bg-gray-200 text-gray-800 font-sans">
-    
+        
     <div id="app" class="app-container container mx-auto p-6 md:p-8 max-w-5xl bg-white rounded-xl shadow-lg my-8 overflow-y-auto" style="max-height: 85vh;">
         <div class="flex justify-center items-center mb-6">
              <img src="https://raw.githubusercontent.com/instructorandradedcc/propuesta-AR/main/logofundacion.jpg" alt="Logo Fundación" class="h-20 w-auto mr-4" onerror="this.onerror=null;this.src='https://placehold.co/120x80/e2e8f0/94a3b8?text=Logo';">
@@ -123,7 +122,7 @@
             <div id="welcome-box" class="bg-indigo-50 border-l-4 border-indigo-500 text-indigo-700 p-4 mb-6" role="alert">
                 <p class="font-bold">¡Bienvenido!</p>
                 <p>Presiona el botón para descargar los recursos. Los archivos se guardarán en la caché de tu navegador para acelerar futuras cargas.</p>
-            </div>                        
+            </div>                                    
             <div class="mt-6 flex flex-col sm:flex-row justify-center items-center gap-4">
                 <button id="load-from-github-btn" class="bg-green-500 text-white font-bold py-3 px-6 rounded-lg hover:bg-green-600 transition duration-300 text-lg shadow-md w-full sm:w-auto flex justify-center items-center">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block mr-2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
@@ -144,7 +143,7 @@
                 <div class="w-full bg-gray-200 rounded-full h-2.5 mt-2">
                     <div id="loading-progress-bar" class="bg-blue-600 h-2.5 rounded-full" style="width: 0%"></div>
                 </div>
-            </div>                        
+            </div>                                    
             <div id="image-preview-container" class="mt-6"></div>
              <div class="mt-8 text-center">
                 <button id="goto-editor-btn" disabled class="bg-indigo-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-indigo-600 transition duration-300 disabled:bg-gray-300 mt-2">Siguiente: Editar Modelos 3D</button>
@@ -165,7 +164,7 @@
                 <div class="md:w-1/3">
                     <label for="asset-selector" class="block mb-2 font-medium text-gray-700">Seleccionar Recurso:</label>
                     <select id="asset-selector" class="w-full p-2 border rounded mb-4"></select>
-                    
+                                        
                     <div class="mt-4"><input type="checkbox" id="move-conjunto-toggle" class="mr-2" checked><label for="move-conjunto-toggle">Mover en conjunto</label></div>
 
                     <h3 class="font-semibold mt-4">Posición (X, Y, Z)</h3>
@@ -206,7 +205,8 @@
                              <div class="loader hidden"></div>
                              <span id="ar-status-text">Estado: Esperando cámara...</span>
                          </div>
-                     </div>                                         
+                     </div>
+                                                             
                      <div class="mt-6 flex flex-col sm:flex-row justify-center items-center gap-4">
                          <button id="back-to-editor-btn-pre" class="bg-gray-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-gray-600 transition duration-300 w-full sm:w-auto">Atrás</button>
                          <button id="start-ar-pc-btn" disabled class="bg-sky-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-sky-600 transition duration-300 disabled:bg-gray-300 w-full sm:w-auto flex items-center justify-center gap-2">
@@ -251,7 +251,7 @@
     import { DragControls } from 'three/addons/controls/DragControls.js';
 
     document.addEventListener('DOMContentLoaded', () => {
-        const APP_VERSION = '2.3-Color-Injected'; 
+        const APP_VERSION = '2.4-Fixed-Pairing'; 
         const state = {
             assets: [],
             currentPage: 'page-upload',
@@ -264,10 +264,15 @@
             textureLoader: new THREE.TextureLoader(),
             currentTarget: null,
             currentPlane: null,
-        };                
+        };                        
+        
         const CACHE_NAME = `ar-assets-cache-v${APP_VERSION}`;
         const GITHUB_BASE_URL = 'https://raw.githubusercontent.com/instructorandradedcc/propuesta-AR/main/asetss/';
-        
+                
+        // ======================================================
+        // INICIO: CORRECCIÓN DE ASOCIACIÓN DE MODELOS
+        // Se asegura que cada marcador cargue su modelo correspondiente.
+        // ======================================================
         const ASSET_MAPPING = [
             { marker: 'cabeza1', model: 'cabeza1', image: 'cabeza1.png' },
             { marker: 'corazon', model: 'corazon', image: 'corazon.png' },
@@ -278,9 +283,12 @@
             { marker: 'mano-iz-protesis', model: 'mano-iz-protesis', image: 'mano-iz-protesis.png' },
             { marker: 'protesis-mano-brazo', model: 'protesis-mano-brazo', image: 'protesis-mano-brazo.png' }
         ];
+        // ======================================================
+        // FIN: CORRECCIÓN DE ASOCIACIÓN DE MODELOS
+        // ======================================================
 
         // ======================================================
-        // INICIO: CÓDIGO AÑADIDO PARA TEXTURA EN VIVO
+        // INICIO: CÓDIGO PARA TEXTURA EN VIVO (PINTURA)
         // ======================================================
         AFRAME.registerComponent('texture-from-video', {
             schema: {},
@@ -338,7 +346,7 @@
             }
         });
         // ======================================================
-        // FIN: CÓDIGO AÑADIDO
+        // FIN: CÓDIGO PARA TEXTURA EN VIVO (PINTURA)
         // ======================================================
 
         AFRAME.registerComponent('ar-zoomer', {
@@ -366,8 +374,7 @@
                         let newScale = this.initialScale * scaleFactor;
                         this.el.object3D.scale.set(newScale, newScale, newScale);
                     }
-                };
-                
+                };                                
                 const onTouchEnd = (e) => {
                     this.pinchStartDistance = 0;
                 };
@@ -383,7 +390,6 @@
                 canvas.addEventListener('touchend', onTouchEnd);
             }
         });
-
 
         AFRAME.registerComponent('ar-rotator', {
             schema: { rotationFactor: { type: 'number', default: 1 } },
@@ -402,7 +408,8 @@
                 const drag = (x, y) => {
                     if (this.isDragging && this.isVisible) {
                         const deltaX = x - this.previousDrag.x;
-                        const deltaY = y - this.previousDrag.y;                                            
+                        const deltaY = y - this.previousDrag.y;
+                                                                    
                         this.el.object3D.rotation.y += THREE.MathUtils.degToRad(deltaX * this.data.rotationFactor);
                         this.el.object3D.rotation.x += THREE.MathUtils.degToRad(deltaY * this.data.rotationFactor);
                         this.previousDrag = { x, y };
@@ -419,7 +426,7 @@
                 this.el.parentEl.addEventListener('targetFound', () => { this.isVisible = true; });
                 this.el.parentEl.addEventListener('targetLost', () => { this.isVisible = false; });
             },
-        });
+        });                
         
         async function clearCacheAndReload() {
             const statusDiv = document.getElementById('cache-status');
@@ -439,7 +446,7 @@
 
                 statusDiv.textContent = 'Caché limpiada. La página se recargará...';
                 statusDiv.className = 'text-center text-green-600 mt-4 font-semibold';
-                
+                                
                 setTimeout(() => {
                     window.location.reload();
                 }, 1500);
@@ -465,7 +472,7 @@
                 await cache.put(url, networkResponse.clone());
             }
             return networkResponse;
-        }                
+        }                                
         
         function displayLoadedImages(assets) {
             const container = document.getElementById('image-preview-container');
@@ -492,14 +499,15 @@
             progressBar.style.width = `0%`;
             progressBar.classList.remove('bg-red-600');
             const totalAssets = ASSET_MAPPING.length; 
-            let loadedCount = 0;                        
-            
+            let loadedCount = 0;
+                                                
             const promises = ASSET_MAPPING.map(async (assetPair, index) => {
                 const urls = {
                     marker: `${GITHUB_BASE_URL}markers/${assetPair.marker}.mind`,
                     model: `${GITHUB_BASE_URL}modelss/${assetPair.model}.glb`,
-                    image: `${GITHUB_BASE_URL}imagenes/${assetPair.image}` // Usando la propiedad 'image'
-                };                          
+                    image: `${GITHUB_BASE_URL}imagenes/${assetPair.image}`
+                };
+                                          
                 const [markerRes, modelRes, imageRes] = await Promise.all([
                     fetchWithCache(urls.marker),
                     fetchWithCache(urls.model),
@@ -509,7 +517,7 @@
                 if (!markerRes.ok || !modelRes.ok || !imageRes.ok) {
                     throw new Error(`Failed to fetch assets for ${assetPair.model}`);
                 }
-                
+                                
                 const [markerBlob, modelBlob, imageBlob] = await Promise.all([
                     markerRes.blob(), modelRes.blob(), imageRes.blob()
                 ]);
@@ -517,7 +525,7 @@
                 loadedCount++;
                 progressBar.style.width = `${(loadedCount / totalAssets) * 100}%`;
                 loadingText.textContent = `Cargando ${assetPair.model}... (${loadedCount}/${totalAssets})`;
-                
+                                
                 return {
                     id: index,
                     name: assetPair.model,
@@ -534,7 +542,8 @@
                 state.assets = await Promise.all(promises);
                 loadingText.textContent = '¡Todos los recursos cargados y guardados en caché!';
                 displayLoadedImages(state.assets);
-                document.getElementById('goto-editor-btn').disabled = false;                        
+                document.getElementById('goto-editor-btn').disabled = false;
+                                        
                 setTimeout(() => { loadingStatusDiv.classList.add('hidden'); }, 1000);
             } catch (error) {
                 loadingText.textContent = 'Error al cargar los recursos. Revisa la consola.';
@@ -544,7 +553,7 @@
                 githubBtn.disabled = false;
             }
         }                
-
+        
         function initEditor() {
             const canvas = document.getElementById('editor-canvas');
             const container = document.getElementById('editor-container');
@@ -564,7 +573,8 @@
             editor.renderer.setPixelRatio(window.devicePixelRatio);
 
             editor.controls = new OrbitControls(editor.camera, editor.renderer.domElement);
-            editor.controls.enableDamping = true;                        
+            editor.controls.enableDamping = true;
+                                    
             const animate = () => { requestAnimationFrame(animate); editor.controls.update(); editor.renderer.render(editor.scene, editor.camera); };
             animate();
         }
@@ -588,7 +598,7 @@
             document.getElementById('rot-y').value = Math.round(transform.rotation.y);
             document.getElementById('rot-z').value = Math.round(transform.rotation.z);
             document.getElementById('scale').value = transform.scale.x.toFixed(2);
-        }
+        }                
         
         function getAllMeshes(object) {
             const meshes = [];
@@ -605,16 +615,16 @@
                 editor.dragControls.dispose();
             }
             const moveConjunto = document.getElementById('move-conjunto-toggle').checked;
-            
+                        
             const draggableObjects = moveConjunto || !editor.currentTarget ? [editor.currentTarget] : getAllMeshes(editor.currentTarget);
-            
-            if (draggableObjects.length === 0 && !moveConjunto) {
+                        
+            if (draggableObjects.length === 0 && !moveConjunto) { 
                  console.warn("Modo individual activado, pero no se encontraron piezas móviles (meshes) en el modelo.");
                  draggableObjects.push(editor.currentTarget);
             }
 
             editor.dragControls = new DragControls(draggableObjects, editor.camera, editor.renderer.domElement);
-            
+                        
             editor.dragControls.addEventListener('dragstart', () => editor.controls.enabled = false);
             editor.dragControls.addEventListener('dragend', (event) => {
                 editor.controls.enabled = true;
@@ -635,8 +645,8 @@
             if (!asset || !editor.scene) return;
 
             if (editor.currentTarget) { 
-                editor.scene.remove(editor.currentTarget); 
-                if (editor.dragControls) editor.dragControls.dispose();
+                 editor.scene.remove(editor.currentTarget); 
+                 if (editor.dragControls) editor.dragControls.dispose();
             }
             if (editor.currentPlane) editor.scene.remove(editor.currentPlane);
 
@@ -647,7 +657,7 @@
                 editor.currentPlane.position.set(0, 0, 0);
                 editor.scene.add(editor.currentPlane);
             });                        
-
+            
             editor.loader.load(asset.modelDataUrl, (gltf) => {
                 editor.currentTarget = gltf.scene;
 
@@ -655,7 +665,7 @@
                     const box = new THREE.Box3();
                     const center = new THREE.Vector3();
                     const size = new THREE.Vector3();
-                    
+                                        
                     gltf.scene.updateMatrixWorld(true);
                     box.setFromObject(gltf.scene);
                     box.getSize(size);
@@ -663,20 +673,21 @@
 
                     const maxSize = Math.max(size.x, size.y, size.z);
                     asset.normalizationFactor = maxSize > 0 ? 1.0 / maxSize : 1.0;
-                    
+                                        
                     gltf.scene.position.sub(center.multiplyScalar(asset.normalizationFactor));
 
                     asset.hasBeenNormalized = true;
                 }
 
-                editor.scene.add(editor.currentTarget);                        
+                editor.scene.add(editor.currentTarget);
+                                        
                 updateModelTransformFromState(asset.transform);
                 updateTransformInputs(asset.transform);
 
                 setupDragControls();
             });
         }                
-
+        
         function updateModelTransformFromState(transform) {
             if (!editor.currentTarget) return;
             const asset = state.assets.find(a => a.id === parseInt(document.getElementById('asset-selector').value));
@@ -690,9 +701,10 @@
             );
             editor.currentTarget.scale.set(finalScale, finalScale, finalScale);
         }                
-
+        
         function preloadARAssets() {
-            if (state.areAssetsPreloaded || state.assets.length === 0) return;                        
+            if (state.areAssetsPreloaded || state.assets.length === 0) return;
+                                    
             const arPreloadContainer = document.getElementById('ar-preload-container');
             arPreloadContainer.innerHTML = ''; 
             const tempScene = document.createElement('a-scene');
@@ -706,7 +718,8 @@
                 assetItem.setAttribute('src', asset.modelDataUrl);
                 assetItem.setAttribute('response-type', 'arraybuffer');
                 assetsEl.appendChild(assetItem);
-            });                        
+            });
+                                    
             const arStatusText = document.getElementById('ar-status-text');
             const arLoader = document.querySelector('#ar-status .loader');
             arStatusText.textContent = 'Cargando modelos 3D...';
@@ -726,7 +739,7 @@
             tempScene.appendChild(assetsEl);
             arPreloadContainer.appendChild(tempScene);
         }                
-
+        
         function setupAndStartAR(shouldEnterFullscreen) {
             if (!state.areAssetsPreloaded) {
                 document.getElementById('ar-status-text').textContent = 'Error: Modelos 3D no listos.';
@@ -740,10 +753,7 @@
             const assetsHTML = state.assets.map(asset => 
                 `<a-asset-item id="model-${asset.id}" src="${asset.modelDataUrl}" response-type="arraybuffer"></a-asset-item>`
             ).join('');
-            
-            // ======================================================
-            // INICIO: MODIFICACIÓN PARA TEXTURA EN VIVO
-            // ======================================================
+                        
             const targetsHTML = state.assets.map((asset, index) => {
                 const t = asset.transform;
                 const finalScale = t.scale.x * asset.normalizationFactor; 
@@ -761,12 +771,9 @@
                     </a-entity>
                 `;
             }).join('');
-            // ======================================================
-            // FIN: MODIFICACIÓN
-            // ======================================================
 
             const mindARSettings = `imageTargetSrc: ${state.assets.map(a => a.markerDataUrl).join(';')}; maxTrackables: 1; autoStart: true; uiLoading: no; uiError: no; uiScanning: no; filterMinCF: 0.001; filterBeta: 10;`;
-            
+                        
             const sceneHTML = `
                 <a-scene id="ar-scene" embedded vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false" mindar-image="${mindARSettings}" color-space="sRGB" renderer="colorManagement: true, physicallyCorrectLights">
                     <a-assets>${assetsHTML}</a-assets>
@@ -795,10 +802,10 @@
             arSceneContainer.classList.add('ar-active');
             document.getElementById('ar-ui-container').classList.add('hidden');
             document.getElementById('ar-active-controls').classList.remove('hidden');
-            state.isArActive = true;                        
-            
+            state.isArActive = true;
+                                                
             if (shouldEnterFullscreen) { 
-                document.documentElement.requestFullscreen().catch(err => {
+                 document.documentElement.requestFullscreen().catch(err => {
                     console.warn("No se pudo entrar en pantalla completa automáticamente.", err);
                 });
             }
@@ -808,13 +815,13 @@
             const arSceneContainer = document.getElementById('ar-scene-container');
             const sceneEl = arSceneContainer.querySelector('a-scene');
             if (sceneEl && sceneEl.systems['mindar-image-system']) { 
-                sceneEl.systems['mindar-image-system'].stop();
+                 sceneEl.systems['mindar-image-system'].stop();
             }
             if (sceneEl && sceneEl.parentNode) {
                 sceneEl.parentNode.removeChild(sceneEl);
             }
             arSceneContainer.innerHTML = '';
-            
+                        
             state.areAssetsPreloaded = false; 
             const appContainer = document.getElementById('app');
             document.documentElement.classList.remove('ar-active');
@@ -823,13 +830,14 @@
             appContainer.style.maxHeight = '85vh'; 
             document.getElementById('ar-ui-container').classList.remove('hidden');
             document.getElementById('ar-active-controls').classList.add('hidden');
-            document.getElementById('scanning-ui').classList.add('hidden');                        
+            document.getElementById('scanning-ui').classList.add('hidden');
+                                    
             if (document.fullscreenElement) {
                 document.exitFullscreen().catch(err => console.error("Error al salir de pantalla completa:", err));
             }
             state.isArActive = false;
         }                
-
+        
         function toggleFullScreen() {
             if (!document.fullscreenElement) {
                 document.documentElement.requestFullscreen().catch(err => {
@@ -854,7 +862,7 @@
                 if (!editor.renderer) initEditor();
                 populateEditorSelector();
                 if (state.assets.length > 0) { 
-                    displayAssetInEditor(parseInt(document.getElementById('asset-selector').value) || 0);
+                     displayAssetInEditor(parseInt(document.getElementById('asset-selector').value) || 0);
                 }
             } else if (pageId === 'page-ar') {
                 document.getElementById('start-ar-pc-btn').disabled = true;
@@ -898,7 +906,7 @@
                 return false;
             }
         }                
-
+        
         async function initializeApp() {
             document.getElementById('version-display').textContent = `v${APP_VERSION}`;
             const successfullyLoadedFromCache = await loadAssetsFromCacheOnStartup();
@@ -919,27 +927,29 @@
         document.getElementById('goto-editor-btn').addEventListener('click', () => navigateTo('page-editor'));
         document.getElementById('goto-ar-btn').addEventListener('click', () => navigateTo('page-ar'));
         document.getElementById('back-to-upload-btn').addEventListener('click', () => navigateTo('page-upload'));
-        document.getElementById('back-to-editor-btn-pre').addEventListener('click', () => navigateTo('page-editor'));                
+        document.getElementById('back-to-editor-btn-pre').addEventListener('click', () => navigateTo('page-editor'));                        
         document.getElementById('start-ar-pc-btn').addEventListener('click', () => setupAndStartAR(false));
-        document.getElementById('start-ar-mobile-btn').addEventListener('click', () => setupAndStartAR(true));                
+        document.getElementById('start-ar-mobile-btn').addEventListener('click', () => setupAndStartAR(true));                        
         document.getElementById('stop-ar-btn').addEventListener('click', stopAR);
         document.getElementById('fullscreen-ar-btn').addEventListener('click', toggleFullScreen);
         document.getElementById('back-to-editor-btn-post').addEventListener('click', () => { navigateTo('page-editor'); });
-        document.getElementById('asset-selector').addEventListener('change', (e) => displayAssetInEditor(parseInt(e.target.value)));                
+        document.getElementById('asset-selector').addEventListener('change', (e) => displayAssetInEditor(parseInt(e.target.value)));                        
         document.getElementById('move-conjunto-toggle').addEventListener('change', setupDragControls);
-        
+                
         ['pos-x', 'pos-y', 'pos-z', 'rot-x', 'rot-y', 'rot-z', 'scale'].forEach(id => {
             document.getElementById(id).addEventListener('input', () => {
                 const assetId = parseInt(document.getElementById('asset-selector').value);
                 const asset = state.assets.find(a => a.id === assetId);
-                if (!asset || !editor.currentTarget) return;                                
+                if (!asset || !editor.currentTarget) return;
+                                                
                 asset.transform.position = { x: parseFloat(document.getElementById('pos-x').value) || 0, y: parseFloat(document.getElementById('pos-y').value) || 0, z: parseFloat(document.getElementById('pos-z').value) || 0 };
                 asset.transform.rotation = { x: parseFloat(document.getElementById('rot-x').value) || 0, y: parseFloat(document.getElementById('rot-y').value) || 0, z: parseFloat(document.getElementById('rot-z').value) || 0 };
                 const scaleVal = parseFloat(document.getElementById('scale').value) || 0;
-                asset.transform.scale = { x: scaleVal, y: scaleVal, z: scaleVal };                                
+                asset.transform.scale = { x: scaleVal, y: scaleVal, z: scaleVal };
+                                                
                 updateModelTransformFromState(asset.transform);
             });
-        });                
+        });                                
         
         window.addEventListener('resize', () => {
             if (state.isArActive) {
@@ -955,5 +965,4 @@
     </script>
 </body>
 </html>
-
 
