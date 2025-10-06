@@ -251,7 +251,7 @@
     import { DragControls } from 'three/addons/controls/DragControls.js';
 
     document.addEventListener('DOMContentLoaded', () => {
-        const APP_VERSION = '2.6-Editor-Fixed'; 
+        const APP_VERSION = '2.7-Mapping-Restored'; 
         const state = {
             assets: [],
             currentPage: 'page-upload',
@@ -268,17 +268,26 @@
         
         const CACHE_NAME = `ar-assets-cache-v${APP_VERSION}`;
         const GITHUB_BASE_URL = 'https://raw.githubusercontent.com/instructorandradedcc/propuesta-AR/main/asetss/';
-                
+        
+        // ======================================================
+        // INICIO: LÓGICA DE ASIGNACIÓN RESTAURADA
+        // Se restaura la lógica del archivo de referencia para asegurar la correspondencia correcta
+        // entre los marcadores (.mind) y los modelos 3D (.glb).
+        // Se añade la propiedad 'image' para que el visor de la Página 2 también sea correcto.
+        // ======================================================
         const ASSET_MAPPING = [
-            { marker: 'protesis-mano-brazo', model: 'protesis-mano-brazo', image: 'protesis-mano-brazo.png' },
-            { marker: 'mano-iz-protesis', model: 'mano-iz-protesis', image: 'mano-iz-protesis.png' },
-            { marker: 'huesosmano', model: 'huesosmano', image: 'huesosmano.png' },
-            { marker: 'hueso-columna', model: 'hueso-columna', image: 'hueso-columna.png' },
-            { marker: 'dedo-mano', model: 'dedo-mano', image: 'dedo-mano.png' },
-            { marker: 'dedo', model: 'dedo', image: 'dedo.png' },
-            { marker: 'corazon', model: 'corazon', image: 'corazon.png' },
-            { marker: 'cabeza1', model: 'cabeza1', image: 'cabeza1.png' }
+            { marker: 'cabeza1', model: 'dedo', image: 'cabeza1.png' },
+            { marker: 'corazon', model: 'dedo-mano', image: 'corazon.png' },
+            { marker: 'dedo-mano', model: 'hueso-columna', image: 'dedo-mano.png' },
+            { marker: 'dedo', model: 'huesosmano', image: 'dedo.png' },
+            { marker: 'hueso-columna', model: 'mano-iz-protesis', image: 'hueso-columna.png' },
+            { marker: 'huesosmano', model: 'protesis-mano-brazo', image: 'huesosmano.png' },
+            { marker: 'mano-iz-protesis', model: 'cabeza1', image: 'mano-iz-protesis.png' },
+            { marker: 'protesis-mano-brazo', model: 'corazon', image: 'protesis-mano-brazo.png' }
         ];
+        // ======================================================
+        // FIN: LÓGICA DE ASIGNACIÓN RESTAURADA
+        // ======================================================
 
         // ======================================================
         // INICIO: CÓDIGO PARA TEXTURA EN VIVO (PINTURA)
@@ -472,8 +481,7 @@
             container.innerHTML = `<h3 class="text-lg font-semibold mb-2 text-center">Imágenes de Marcadores Cargadas</h3>`;
             const grid = document.createElement('div');
             grid.className = 'grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4';
-            const sortedAssets = [...assets].sort((a,b) => a.name.localeCompare(b.name));
-            sortedAssets.forEach(asset => {
+            assets.forEach(asset => {
                 const img = document.createElement('img');
                 img.src = asset.imageDataUrl;
                 img.className = 'w-full h-auto object-cover rounded-lg shadow-md';
@@ -523,6 +531,7 @@
                 return {
                     id: index,
                     name: assetPair.model,
+                    markerName: assetPair.marker,
                     markerDataUrl: URL.createObjectURL(markerBlob),
                     modelDataUrl: URL.createObjectURL(modelBlob),
                     imageDataUrl: URL.createObjectURL(imageBlob),
@@ -576,11 +585,12 @@
         function populateEditorSelector() {
             const assetSelector = document.getElementById('asset-selector');
             assetSelector.innerHTML = '';
-            const sortedAssets = [...state.assets].sort((a, b) => a.name.localeCompare(b.name));
-            sortedAssets.forEach(asset => {
+            // Populate based on the original ASSET_MAPPING order to match IDs
+            state.assets.forEach(asset => {
                 const option = document.createElement('option');
                 option.value = asset.id;
-                option.textContent = asset.name;
+                // Display "Marker -> Model" for clarity
+                option.textContent = `${asset.markerName} -> ${asset.name}`;
                 assetSelector.appendChild(option);
             });
         }
@@ -708,7 +718,7 @@
             tempScene.style.cssText = 'position:fixed; height:1px; width:1px; top:-9999px; left:-9999px;';
             const assetsEl = document.createElement('a-assets');
             assetsEl.setAttribute('timeout', '30000');
-            state.assets.forEach((asset, index) => {
+            state.assets.forEach((asset) => {
                 const assetItem = document.createElement('a-asset-item');
                 assetItem.id = `model-${asset.id}`; 
                 assetItem.setAttribute('src', asset.modelDataUrl);
@@ -888,7 +898,7 @@
                         markerRes.blob(), modelRes.blob(), imageRes.blob()
                     ]);
                     return {
-                        id: index, name: assetPair.model,
+                        id: index, name: assetPair.model, markerName: assetPair.marker,
                         markerDataUrl: URL.createObjectURL(markerBlob),
                         modelDataUrl: URL.createObjectURL(modelBlob),
                         imageDataUrl: URL.createObjectURL(imageBlob),
