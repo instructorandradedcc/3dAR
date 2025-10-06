@@ -251,7 +251,7 @@
     import { DragControls } from 'three/addons/controls/DragControls.js';
 
     document.addEventListener('DOMContentLoaded', () => {
-        const APP_VERSION = '2.5-Final-Pairing'; 
+        const APP_VERSION = '2.6-Editor-Fixed'; 
         const state = {
             assets: [],
             currentPage: 'page-upload',
@@ -269,12 +269,6 @@
         const CACHE_NAME = `ar-assets-cache-v${APP_VERSION}`;
         const GITHUB_BASE_URL = 'https://raw.githubusercontent.com/instructorandradedcc/propuesta-AR/main/asetss/';
                 
-        // ======================================================
-        // INICIO: ASOCIACIÓN DE MODELOS CORREGIDA
-        // Se asegura que cada marcador cargue su modelo correspondiente.
-        // El orden de las líneas no afecta el resultado, solo la
-        // correspondencia entre 'marker' y 'model' en cada objeto.
-        // ======================================================
         const ASSET_MAPPING = [
             { marker: 'protesis-mano-brazo', model: 'protesis-mano-brazo', image: 'protesis-mano-brazo.png' },
             { marker: 'mano-iz-protesis', model: 'mano-iz-protesis', image: 'mano-iz-protesis.png' },
@@ -285,9 +279,6 @@
             { marker: 'corazon', model: 'corazon', image: 'corazon.png' },
             { marker: 'cabeza1', model: 'cabeza1', image: 'cabeza1.png' }
         ];
-        // ======================================================
-        // FIN: ASOCIACIÓN DE MODELOS CORREGIDA
-        // ======================================================
 
         // ======================================================
         // INICIO: CÓDIGO PARA TEXTURA EN VIVO (PINTURA)
@@ -481,7 +472,8 @@
             container.innerHTML = `<h3 class="text-lg font-semibold mb-2 text-center">Imágenes de Marcadores Cargadas</h3>`;
             const grid = document.createElement('div');
             grid.className = 'grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4';
-            assets.forEach(asset => {
+            const sortedAssets = [...assets].sort((a,b) => a.name.localeCompare(b.name));
+            sortedAssets.forEach(asset => {
                 const img = document.createElement('img');
                 img.src = asset.imageDataUrl;
                 img.className = 'w-full h-auto object-cover rounded-lg shadow-md';
@@ -584,7 +576,8 @@
         function populateEditorSelector() {
             const assetSelector = document.getElementById('asset-selector');
             assetSelector.innerHTML = '';
-            state.assets.forEach(asset => {
+            const sortedAssets = [...state.assets].sort((a, b) => a.name.localeCompare(b.name));
+            sortedAssets.forEach(asset => {
                 const option = document.createElement('option');
                 option.value = asset.id;
                 option.textContent = asset.name;
@@ -717,7 +710,7 @@
             assetsEl.setAttribute('timeout', '30000');
             state.assets.forEach((asset, index) => {
                 const assetItem = document.createElement('a-asset-item');
-                assetItem.id = `model-${index}`; // Usar index para asegurar consistencia
+                assetItem.id = `model-${asset.id}`; 
                 assetItem.setAttribute('src', asset.modelDataUrl);
                 assetItem.setAttribute('response-type', 'arraybuffer');
                 assetsEl.appendChild(assetItem);
@@ -753,8 +746,8 @@
             const arSceneContainer = document.getElementById('ar-scene-container');
             arSceneContainer.innerHTML = ''; 
 
-            const assetsHTML = state.assets.map((asset, index) => 
-                `<a-asset-item id="model-${index}" src="${asset.modelDataUrl}" response-type="arraybuffer"></a-asset-item>`
+            const assetsHTML = state.assets.map((asset) => 
+                `<a-asset-item id="model-${asset.id}" src="${asset.modelDataUrl}" response-type="arraybuffer"></a-asset-item>`
             ).join('');
                         
             const targetsHTML = state.assets.map((asset, index) => {
@@ -763,7 +756,7 @@
                 return `
                     <a-entity mindar-image-target="targetIndex: ${index}">
                         <a-gltf-model 
-                            src="#model-${index}" 
+                            src="#model-${asset.id}" 
                             position="${t.position.x} ${t.position.y} ${t.position.z}" 
                             rotation="${t.rotation.x} ${t.rotation.y} ${t.rotation.z}" 
                             scale="${finalScale} ${finalScale} ${finalScale}" 
@@ -865,7 +858,8 @@
                 if (!editor.renderer) initEditor();
                 populateEditorSelector();
                 if (state.assets.length > 0) { 
-                     displayAssetInEditor(state.assets.findIndex(a => a.name === document.getElementById('asset-selector').value) || 0);
+                     const initialAssetId = parseInt(document.getElementById('asset-selector').value);
+                     displayAssetInEditor(initialAssetId);
                 }
             } else if (pageId === 'page-ar') {
                 document.getElementById('start-ar-pc-btn').disabled = true;
@@ -903,8 +897,6 @@
                     };
                 }));
                 state.assets = assets;
-                // Reordenar alfabéticamente para el selector
-                state.assets.sort((a, b) => a.name.localeCompare(b.name));
                 return true;
             } catch (error) {
                 console.warn("No se pudieron cargar los assets desde la caché:", error.message);
@@ -940,19 +932,21 @@
         document.getElementById('back-to-editor-btn-post').addEventListener('click', () => { navigateTo('page-editor'); });
         
         document.getElementById('asset-selector').addEventListener('change', (e) => {
-             const selectedAssetIndex = state.assets.findIndex(a => a.name === e.target.value);
-             displayAssetInEditor(selectedAssetIndex);
+             const selectedAssetId = parseInt(e.target.value);
+             displayAssetInEditor(selectedAssetId);
         });
 
         document.getElementById('move-conjunto-toggle').addEventListener('change', () => {
-             const selectedAssetIndex = state.assets.findIndex(a => a.name === document.getElementById('asset-selector').value);
-             if (selectedAssetIndex !== -1) displayAssetInEditor(selectedAssetIndex);
+             const selectedAssetId = parseInt(document.getElementById('asset-selector').value);
+             if (!isNaN(selectedAssetId)) {
+                displayAssetInEditor(selectedAssetId);
+             }
         });
                 
         ['pos-x', 'pos-y', 'pos-z', 'rot-x', 'rot-y', 'rot-z', 'scale'].forEach(id => {
             document.getElementById(id).addEventListener('input', () => {
-                const assetName = document.getElementById('asset-selector').value;
-                const asset = state.assets.find(a => a.name === assetName);
+                const assetId = parseInt(document.getElementById('asset-selector').value);
+                const asset = state.assets.find(a => a.id === assetId);
                 if (!asset || !editor.currentTarget) return;
                                                 
                 asset.transform.position = { x: parseFloat(document.getElementById('pos-x').value) || 0, y: parseFloat(document.getElementById('pos-y').value) || 0, z: parseFloat(document.getElementById('pos-z').value) || 0 };
@@ -978,4 +972,5 @@
     </script>
 </body>
 </html>
+
 
