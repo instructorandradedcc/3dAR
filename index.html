@@ -125,19 +125,38 @@
             this.model.traverse((node) => { if (node.isMesh && node.material) { node.material = node.material.clone(); node.material.map = this.texture; node.material.needsUpdate = true; } });
         },
         tick: function() {
-            const mindarSystem = this.el.sceneEl.systems['mindar-image-system'];
-            if (this.video && this.textureContext && mindarSystem && mindarSystem.controller && this.el.object3D.visible) {
+            // The visibility of the parent <a-entity mindar-image-target> is controlled by MindAR.
+            if (this.video && this.textureContext && this.el.parentEl.object3D.visible) {
                 try {
-                    const markerCorners = mindarSystem.controller.getMarkerWorldCorners(0);
-                    if (markerCorners) {
-                        this.textureContext.clearRect(0, 0, this.textureCanvas.width, this.textureCanvas.height);
-                        const screenCoords = markerCorners.map(corner => {
-                            const vector = new THREE.Vector3(corner.x, corner.y, corner.z).project(this.el.sceneEl.camera);
-                            return { x: (vector.x + 1) * this.video.videoWidth / 2, y: (-vector.y + 1) * this.video.videoHeight / 2 };
-                        });
-                        this.drawPerspectiveCorrectedImage(screenCoords);
-                        this.texture.needsUpdate = true;
-                    }
+                    // SOLUCIÓN: La función getMarkerWorldCorners no existe en esta versión de MindAR.
+                    // La calculamos manualmente obteniendo la matriz de transformación del marcador
+                    // y aplicándola a las 4 esquinas de un plano local.
+                    const markerObject = this.el.parentEl.object3D;
+                    const markerMatrix = markerObject.matrixWorld;
+
+                    // Define corners in the marker's local space (a 1x1 plane on XY).
+                    // The order is important for the perspective correction.
+                    // Order: top-left, top-right, bottom-right, bottom-left
+                    const localCorners = [
+                        new THREE.Vector3(-0.5, 0.5, 0),
+                        new THREE.Vector3(0.5, 0.5, 0),
+                        new THREE.Vector3(0.5, -0.5, 0),
+                        new THREE.Vector3(-0.5, -0.5, 0)
+                    ];
+                    
+                    // Apply the marker's world matrix to get world coordinates
+                    const markerCorners = localCorners.map(corner => corner.clone().applyMatrix4(markerMatrix));
+                    
+                    this.textureContext.clearRect(0, 0, this.textureCanvas.width, this.textureCanvas.height);
+
+                    // Project world coordinates to screen coordinates
+                    const screenCoords = markerCorners.map(corner => {
+                        const vector = corner.project(this.el.sceneEl.camera);
+                        return { x: (vector.x + 1) * this.video.videoWidth / 2, y: (-vector.y + 1) * this.video.videoHeight / 2 };
+                    });
+
+                    this.drawPerspectiveCorrectedImage(screenCoords);
+                    this.texture.needsUpdate = true;
                 } catch(e) { if (!this.logged) { console.error("Error al proyectar la textura:", e); this.logged = true; } }
             }
         },
@@ -172,7 +191,7 @@
     });
 
     document.addEventListener('DOMContentLoaded', () => {
-        const APP_VERSION = 'v3.0'; // Updated version
+        const APP_VERSION = 'v3.1'; // Updated version
         const CACHE_NAME = `ar-color-cache-${APP_VERSION}`;
         document.getElementById('app-version').textContent = APP_VERSION;
 
@@ -272,11 +291,10 @@
                 const cache = await caches.open(CACHE_NAME);
                 const urls = getAssetUrls(); 
 
-                // CAMBIO: Definimos qué assets se convertirán a blob y cuáles no.
                 const filesToLoad = [
                     { key: 'image', url: urls.image, asBlob: true },
                     { key: 'marker', url: urls.marker, asBlob: true },
-                    { key: 'model', url: urls.model, asBlob: false } // El modelo NO se convierte a blob
+                    { key: 'model', url: urls.model, asBlob: false }
                 ];
                 let loadedCount = 0;
                 const tempAssets = {};
@@ -290,7 +308,6 @@
                         const blob = await res.blob();
                         tempAssets[asset.key] = URL.createObjectURL(blob);
                     } else {
-                        // CAMBIO: Guardamos la URL original del modelo en lugar de un blob URL.
                         tempAssets[asset.key] = asset.url;
                     }
                     
@@ -321,7 +338,7 @@
                 const responses = await Promise.all([
                     cache.match(urls.image),
                     cache.match(urls.marker),
-                    cache.match(urls.model) // También verificamos el modelo en caché
+                    cache.match(urls.model)
                 ]);
 
                 if (responses.every(res => res && res.ok)) {
@@ -330,7 +347,6 @@
                     state.assets = {
                         image: URL.createObjectURL(blobs[0]),
                         marker: URL.createObjectURL(blobs[1]),
-                        // CAMBIO: Asignamos la URL original para el modelo
                         model: urls.model 
                     };
                     
@@ -350,7 +366,6 @@
             const arSceneContainer = document.getElementById('ar-scene-container');
             arSceneContainer.innerHTML = ''; 
 
-            // CAMBIO: Usamos state.assets.model que ahora contiene la URL directa al .glb
             const sceneHTML = `
                 <a-scene id="ar-scene" embedded vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false" mindar-image="imageTargetSrc: ${state.assets.marker}; autoStart: true; uiLoading: no; uiError: no; uiScanning: no;" color-space="sRGB" renderer="colorManagement: true, physicallyCorrectLights">
                     <a-assets timeout="30000">
@@ -409,7 +424,6 @@
     </script>
 </body>
 </html>
-
 
 
 
