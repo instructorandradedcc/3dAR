@@ -172,12 +172,11 @@
     });
 
     document.addEventListener('DOMContentLoaded', () => {
-        const APP_VERSION = 'v2.9'; // Updated version
+        const APP_VERSION = 'v3.0'; // Updated version
         const CACHE_NAME = `ar-color-cache-${APP_VERSION}`;
         document.getElementById('app-version').textContent = APP_VERSION;
 
         const state = { isArActive: false, assets: {} };
-        // SOLUCIÓN DEFINITIVA: Cambiar a un CDN alternativo (Statically) que no tenga problemas de caché de permisos.
         const GITHUB_BASE_URL = 'https://cdn.statically.io/gh/instructorandradedcc/propuesta-AR/main/asetss/';
 
         const ASSET_MAPPING = [{
@@ -273,16 +272,28 @@
                 const cache = await caches.open(CACHE_NAME);
                 const urls = getAssetUrls(); 
 
-                const filesToLoad = Object.entries(urls);
+                // CAMBIO: Definimos qué assets se convertirán a blob y cuáles no.
+                const filesToLoad = [
+                    { key: 'image', url: urls.image, asBlob: true },
+                    { key: 'marker', url: urls.marker, asBlob: true },
+                    { key: 'model', url: urls.model, asBlob: false } // El modelo NO se convierte a blob
+                ];
                 let loadedCount = 0;
                 const tempAssets = {};
 
-                for (const [key, url] of filesToLoad) {
-                    loadingText.textContent = `Descargando ${key}...`;
-                    const res = await fetchWithCache(url, cache);
-                    if (!res.ok) throw new Error(`Fallo al descargar ${key} (Status: ${res.status})`);
-                    const blob = await res.blob();
-                    tempAssets[key] = URL.createObjectURL(blob);
+                for (const asset of filesToLoad) {
+                    loadingText.textContent = `Descargando ${asset.key}...`;
+                    const res = await fetchWithCache(asset.url, cache);
+                    if (!res.ok) throw new Error(`Fallo al descargar ${asset.key} (Status: ${res.status})`);
+                    
+                    if (asset.asBlob) {
+                        const blob = await res.blob();
+                        tempAssets[asset.key] = URL.createObjectURL(blob);
+                    } else {
+                        // CAMBIO: Guardamos la URL original del modelo en lugar de un blob URL.
+                        tempAssets[asset.key] = asset.url;
+                    }
+                    
                     loadedCount++;
                     progressBar.style.width = `${(loadedCount / filesToLoad.length) * 100}%`;
                 }
@@ -307,14 +318,20 @@
                 const cache = await caches.open(CACHE_NAME);
                 const urls = getAssetUrls(); 
                 
-                const responses = await Promise.all(Object.values(urls).map(url => cache.match(url)));
+                const responses = await Promise.all([
+                    cache.match(urls.image),
+                    cache.match(urls.marker),
+                    cache.match(urls.model) // También verificamos el modelo en caché
+                ]);
 
                 if (responses.every(res => res && res.ok)) {
-                    const blobs = await Promise.all(responses.map(res => res.blob()));
+                    const blobs = await Promise.all([responses[0].blob(), responses[1].blob()]);
+                    
                     state.assets = {
                         image: URL.createObjectURL(blobs[0]),
                         marker: URL.createObjectURL(blobs[1]),
-                        model: URL.createObjectURL(blobs[2])
+                        // CAMBIO: Asignamos la URL original para el modelo
+                        model: urls.model 
                     };
                     
                     document.getElementById('loader-welcome-text').textContent = 'Recursos encontrados en caché. ¡Listo para empezar!';
@@ -333,6 +350,7 @@
             const arSceneContainer = document.getElementById('ar-scene-container');
             arSceneContainer.innerHTML = ''; 
 
+            // CAMBIO: Usamos state.assets.model que ahora contiene la URL directa al .glb
             const sceneHTML = `
                 <a-scene id="ar-scene" embedded vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false" mindar-image="imageTargetSrc: ${state.assets.marker}; autoStart: true; uiLoading: no; uiError: no; uiScanning: no;" color-space="sRGB" renderer="colorManagement: true, physicallyCorrectLights">
                     <a-assets timeout="30000">
@@ -376,7 +394,7 @@
             document.getElementById('app').classList.remove('ar-fullscreen');
             document.getElementById('ar-ui-container').classList.remove('hidden');
             document.getElementById('ar-active-controls').classList.add('hidden');
-            document.getElementById('scanning-ui').classList.add('hidden');                               
+            document.getElementById('scanning-ui').classList.add('hidden');                        
             state.isArActive = false;
             document.getElementById('start-ar-btn').disabled = false;
         }               
