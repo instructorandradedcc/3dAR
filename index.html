@@ -251,7 +251,7 @@
     import { DragControls } from 'three/addons/controls/DragControls.js';
 
     document.addEventListener('DOMContentLoaded', () => {
-        const APP_VERSION = '3.1-Robust-Paint'; 
+        const APP_VERSION = '3.2-Final-Paint-Fix'; 
         const state = {
             assets: [],
             currentPage: 'page-upload',
@@ -281,7 +281,7 @@
         ];
 
         // ======================================================
-        // INICIO: CÓDIGO PARA TEXTURA EN VIVO (PINTURA DEFINITIVA)
+        // INICIO: CÓDIGO PARA TEXTURA EN VIVO (PINTURA CORREGIDA)
         // ======================================================
         AFRAME.registerComponent('texture-from-video', {
             schema: {},
@@ -297,30 +297,32 @@
                 this.texture = new THREE.CanvasTexture(this.textureCanvas);
                 this.texture.minFilter = THREE.LinearFilter; this.texture.magFilter = THREE.LinearFilter; this.texture.colorSpace = THREE.SRGBColorSpace;
                 
-                // SOLUCIÓN DE PINTURA DEFINITIVA:
-                // Se crea una "capa de pintura" invisible que se superpone al modelo original.
-                // Esto preserva las texturas originales y permite pintar encima.
+                // SOLUCIÓN DE PINTURA CORREGIDA:
+                // Se itera sobre los materiales del modelo para aplicar la textura de pintura
+                // de forma correcta, sin causar el error de bucle infinito.
                 this.model.traverse((node) => { 
-                    if (node.isMesh && node.material) { 
-                        // Se crea un material nuevo y transparente para la capa de pintura.
-                        const overlayMaterial = new THREE.MeshStandardMaterial({
-                            map: this.texture,
-                            transparent: true,
-                            blending: THREE.AdditiveBlending, // Mezcla los colores para un efecto de "luz".
-                            polygonOffset: true,       // Evita que la capa parpadee con el modelo original.
-                            polygonOffsetFactor: -0.1, 
-                            depthTest: true,
-                        });
+                    if (node.isMesh && node.material) {
+                        // Se asegura de que se pueda iterar sobre uno o varios materiales.
+                        const materials = Array.isArray(node.material) ? node.material : [node.material];
                         
-                        // Si el modelo original no tiene textura, se pone blanco para poder colorearlo.
-                        if (!node.material.map) {
-                           node.material.color.set(0xffffff);
-                        }
-
-                        // Se crea una malla duplicada con este material y se añade al modelo.
-                        const overlayMesh = new THREE.Mesh(node.geometry, overlayMaterial);
-                        node.add(overlayMesh);
-                    } 
+                        materials.forEach(material => {
+                            // CASO 1: Si el material ya tiene una textura (ej. el cráneo).
+                            if (material.map) {
+                                // Se aplica la pintura como un "mapa de luz" (lightMap).
+                                // Esto superpone la pintura sobre la textura original.
+                                material.lightMap = this.texture;
+                                material.lightMapIntensity = 1.5; // Intensidad para que sea visible.
+                            } 
+                            // CASO 2: Si el material es un color sólido (sin textura).
+                            else {
+                                // Se cambia el color a blanco para no teñir la pintura.
+                                material.color.set(0xffffff);
+                                // La pintura se convierte en la textura principal.
+                                material.map = this.texture;
+                            }
+                            material.needsUpdate = true;
+                        });
+                    }
                 });
             },
             tick: function() {
@@ -364,7 +366,7 @@
             }
         });
         // ======================================================
-        // FIN: CÓDIGO PARA TEXTURA EN VIVO (PINTURA DEFINITIVA)
+        // FIN: CÓDIGO PARA TEXTURA EN VIVO (PINTURA CORREGIDA)
         // ======================================================
 
         AFRAME.registerComponent('ar-zoomer', {
@@ -997,6 +999,7 @@
     </script>
 </body>
 </html>
+
 
 
 
