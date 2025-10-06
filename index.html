@@ -251,7 +251,7 @@
     import { DragControls } from 'three/addons/controls/DragControls.js';
 
     document.addEventListener('DOMContentLoaded', () => {
-        const APP_VERSION = '3.0-Advanced-Paint'; 
+        const APP_VERSION = '3.1-Robust-Paint'; 
         const state = {
             assets: [],
             currentPage: 'page-upload',
@@ -281,7 +281,7 @@
         ];
 
         // ======================================================
-        // INICIO: CÓDIGO PARA TEXTURA EN VIVO (PINTURA AVANZADA)
+        // INICIO: CÓDIGO PARA TEXTURA EN VIVO (PINTURA DEFINITIVA)
         // ======================================================
         AFRAME.registerComponent('texture-from-video', {
             schema: {},
@@ -297,29 +297,29 @@
                 this.texture = new THREE.CanvasTexture(this.textureCanvas);
                 this.texture.minFilter = THREE.LinearFilter; this.texture.magFilter = THREE.LinearFilter; this.texture.colorSpace = THREE.SRGBColorSpace;
                 
-                // SOLUCIÓN DE PINTURA AVANZADA:
-                // Se itera sobre todos los nodos del modelo.
+                // SOLUCIÓN DE PINTURA DEFINITIVA:
+                // Se crea una "capa de pintura" invisible que se superpone al modelo original.
+                // Esto preserva las texturas originales y permite pintar encima.
                 this.model.traverse((node) => { 
                     if (node.isMesh && node.material) { 
-                        const newMaterial = node.material.clone();
+                        // Se crea un material nuevo y transparente para la capa de pintura.
+                        const overlayMaterial = new THREE.MeshStandardMaterial({
+                            map: this.texture,
+                            transparent: true,
+                            blending: THREE.AdditiveBlending, // Mezcla los colores para un efecto de "luz".
+                            polygonOffset: true,       // Evita que la capa parpadee con el modelo original.
+                            polygonOffsetFactor: -0.1, 
+                            depthTest: true,
+                        });
                         
-                        // CASO 1: El modelo ya tiene una textura original.
-                        if (newMaterial.map) {
-                            // Se aplica la pintura como una textura "emisiva" (que brilla).
-                            // Esto añade el color de la pintura sobre la textura original.
-                            newMaterial.emissiveMap = this.texture;
-                            newMaterial.emissive.set(0xffffff); // Se pone al máximo brillo.
-                        } 
-                        // CASO 2: El modelo no tiene textura (es un color sólido).
-                        else {
-                            // Se pone un fondo blanco para poder pintar sobre él.
-                            newMaterial.color.set(0xffffff);
-                            // La pintura se aplica como la textura principal.
-                            newMaterial.map = this.texture; 
+                        // Si el modelo original no tiene textura, se pone blanco para poder colorearlo.
+                        if (!node.material.map) {
+                           node.material.color.set(0xffffff);
                         }
-                        
-                        node.material = newMaterial;
-                        node.material.needsUpdate = true; 
+
+                        // Se crea una malla duplicada con este material y se añade al modelo.
+                        const overlayMesh = new THREE.Mesh(node.geometry, overlayMaterial);
+                        node.add(overlayMesh);
                     } 
                 });
             },
@@ -364,7 +364,7 @@
             }
         });
         // ======================================================
-        // FIN: CÓDIGO PARA TEXTURA EN VIVO (PINTURA AVANZADA)
+        // FIN: CÓDIGO PARA TEXTURA EN VIVO (PINTURA DEFINITIVA)
         // ======================================================
 
         AFRAME.registerComponent('ar-zoomer', {
@@ -601,12 +601,11 @@
         function populateEditorSelector() {
             const assetSelector = document.getElementById('asset-selector');
             assetSelector.innerHTML = '';
-            // SOLUCIÓN PARA NOMBRES DEL SELECTOR:
             // Se muestra solo el nombre del modelo 3D para evitar confusiones.
             state.assets.forEach(asset => {
                 const option = document.createElement('option');
                 option.value = asset.id;
-                option.textContent = asset.name; // <-- Se muestra solo el nombre del modelo.
+                option.textContent = asset.name;
                 assetSelector.appendChild(option);
             });
         }
