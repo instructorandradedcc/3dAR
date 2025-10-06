@@ -251,7 +251,7 @@
     import { DragControls } from 'three/addons/controls/DragControls.js';
 
     document.addEventListener('DOMContentLoaded', () => {
-        const APP_VERSION = '3.2-Final-Paint-Fix'; 
+        const APP_VERSION = '3.4-Final-Paint-Logic'; 
         const state = {
             assets: [],
             currentPage: 'page-upload',
@@ -281,50 +281,63 @@
         ];
 
         // ======================================================
-        // INICIO: CÓDIGO PARA TEXTURA EN VIVO (PINTURA CORREGIDA)
+        // INICIO: CÓDIGO PARA TEXTURA EN VIVO (VERSIÓN DEFINITIVA)
         // ======================================================
         AFRAME.registerComponent('texture-from-video', {
             schema: {},
             init: function () {
-                this.sceneEl = this.el.sceneEl; this.model = null; this.textureCanvas = null; this.textureContext = null; this.texture = null; this.video = null; this.logged = false;
-                this.el.addEventListener('model-loaded', () => { this.model = this.el.getObject3D('mesh'); this.setupTexture(); });
-                this.sceneEl.addEventListener('arReady', () => { this.video = document.querySelector('video'); });
+                this.sceneEl = this.el.sceneEl; this.model = null; this.textureCanvas = null; this.textureContext = null; this.texture = null; this.video = null; this.tickCounter = 0;
+                
+                this.el.addEventListener('model-loaded', () => { 
+                    this.model = this.el.getObject3D('mesh'); 
+                    this.setupPaintLayer(); 
+                });
+                this.sceneEl.addEventListener('arReady', () => { 
+                    this.video = document.querySelector('video'); 
+                });
             },
-            setupTexture: function() {
+
+            setupPaintLayer: function() {
                 if (!this.model) return;
-                this.textureCanvas = document.createElement('canvas'); this.textureCanvas.width = 512; this.textureCanvas.height = 512;
+                
+                this.textureCanvas = document.createElement('canvas'); 
+                this.textureCanvas.width = 512; 
+                this.textureCanvas.height = 512;
                 this.textureContext = this.textureCanvas.getContext('2d');
                 this.texture = new THREE.CanvasTexture(this.textureCanvas);
-                this.texture.minFilter = THREE.LinearFilter; this.texture.magFilter = THREE.LinearFilter; this.texture.colorSpace = THREE.SRGBColorSpace;
+                this.texture.minFilter = THREE.LinearFilter; 
+                this.texture.magFilter = THREE.LinearFilter; 
+                this.texture.colorSpace = THREE.SRGBColorSpace;
                 
-                // SOLUCIÓN DE PINTURA CORREGIDA:
-                // Se itera sobre los materiales del modelo para aplicar la textura de pintura
-                // de forma correcta, sin causar el error de bucle infinito.
+                const processedMaterials = new Set();
+
                 this.model.traverse((node) => { 
                     if (node.isMesh && node.material) {
-                        // Se asegura de que se pueda iterar sobre uno o varios materiales.
                         const materials = Array.isArray(node.material) ? node.material : [node.material];
                         
                         materials.forEach(material => {
-                            // CASO 1: Si el material ya tiene una textura (ej. el cráneo).
-                            if (material.map) {
-                                // Se aplica la pintura como un "mapa de luz" (lightMap).
-                                // Esto superpone la pintura sobre la textura original.
-                                material.lightMap = this.texture;
-                                material.lightMapIntensity = 1.5; // Intensidad para que sea visible.
-                            } 
-                            // CASO 2: Si el material es un color sólido (sin textura).
-                            else {
-                                // Se cambia el color a blanco para no teñir la pintura.
-                                material.color.set(0xffffff);
-                                // La pintura se convierte en la textura principal.
-                                material.map = this.texture;
+                            if (processedMaterials.has(material)) return;
+
+                            const newMaterial = material.clone();
+
+                            if (newMaterial.map) {
+                                console.log("[AR LOG] Modelo con textura detectado. Aplicando pintura como capa de luz (emissive).");
+                                newMaterial.emissiveMap = this.texture;
+                                newMaterial.emissive = new THREE.Color(0xFFFFFF);
+                                newMaterial.emissiveIntensity = 2.0;
+                            } else {
+                                console.log("[AR LOG] Modelo sin textura detectado. Poniendo base blanca y aplicando pintura.");
+                                newMaterial.color.set(0xFFFFFF);
+                                newMaterial.map = this.texture;
                             }
-                            material.needsUpdate = true;
+                            
+                            node.material = newMaterial;
+                            processedMaterials.add(newMaterial);
                         });
-                    }
+                    } 
                 });
             },
+
             tick: function() {
                 if (this.video && this.textureContext && this.el.parentEl.object3D.visible) {
                     try {
@@ -342,8 +355,13 @@
                         });
                         this.drawPerspectiveCorrectedImage(screenCoords);
                         this.texture.needsUpdate = true;
-                    } catch(e) { if (!this.logged) { console.error("Error projecting texture:", e); this.logged = true; } }
+                    } catch(e) { 
+                        if (this.tickCounter % 300 === 0) {
+                             console.error("[AR LOG] Error durante la proyección de textura:", e);
+                        }
+                    }
                 }
+                this.tickCounter++;
             },
             drawPerspectiveCorrectedImage: function(points) {
                 const ctx = this.textureContext, canvas = this.textureCanvas;
@@ -366,7 +384,7 @@
             }
         });
         // ======================================================
-        // FIN: CÓDIGO PARA TEXTURA EN VIVO (PINTURA CORREGIDA)
+        // FIN: CÓDIGO PARA TEXTURA EN VIVO
         // ======================================================
 
         AFRAME.registerComponent('ar-zoomer', {
@@ -810,12 +828,20 @@
             const sceneEl = document.getElementById('ar-scene');
             const scanningUI = document.getElementById('scanning-ui');
 
+            // LOGS DE EVENTOS DE LA CÁMARA
             sceneEl.addEventListener('arReady', () => {
+                console.log('[AR LOG] Escena AR lista. Iniciando cámara.');
                 scanningUI.classList.remove('hidden');
                 document.getElementById('ar-preloader').classList.add('hidden');
             });
-            sceneEl.addEventListener('targetFound', () => scanningUI.classList.add('hidden'));
-            sceneEl.addEventListener('targetLost', () => scanningUI.classList.remove('hidden'));
+            sceneEl.addEventListener('targetFound', (event) => {
+                console.log('[AR LOG] Marcador Encontrado:', event.detail.name);
+                scanningUI.classList.add('hidden');
+            });
+            sceneEl.addEventListener('targetLost', (event) => {
+                console.log('[AR LOG] Marcador Perdido:', event.detail.name);
+                scanningUI.classList.remove('hidden');
+            });
 
             const appContainer = document.getElementById('app');
             document.documentElement.classList.add('ar-active');
@@ -999,6 +1025,7 @@
     </script>
 </body>
 </html>
+
 
 
 
